@@ -269,6 +269,9 @@
                             clear()
                             if (stuff.length === 0) {
                                 message('There are no messages here, Send one to get started. Double click a message, and it will be deleted.')
+                                message('Use "__clear" as your input anywhere in the app to wipe your data.')
+                                message('If you want to move your data to another device, Use "__share" as your input while unlocked to display a QR code that can be scanned to move your data.')
+                                messaeg('Remember, The relocated data will still be encrypted with the passcode used on the previous device.')
                             } else {
                                 let remaining = stuff
                                 let q = -1
