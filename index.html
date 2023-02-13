@@ -4,13 +4,16 @@
 <head>
     <title>Yoko</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="crypto.js" defer></script>
+    <script src="stuff.js" defer></script>
 </head>
 
 <body>
+    <qr>
+        <canvas></canvas>
+    </qr>
     <messages>
     </messages>
-    <input autocapitalize="false" autocomplete="false" spellcheck="false" class="message"
+    <input type="password" autocapitalize="false" autocomplete="false" spellcheck="false" class="message"
         placeholder="Enter your passcode...">
     <hr>
 
@@ -106,6 +109,8 @@
             font-size: 1rem;
             line-break: strict;
 
+            position: relative;
+
             border: 2px solid rgba(159, 255, 223, 0.9);
             background-color: rgba(159, 255, 223, 0.9);
 
@@ -118,7 +123,41 @@
 
             transition: background-color 0.5s, border 0.5s;
 
-            animation: appear 2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: appear 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        msg>date {
+            position: absolute;
+            bottom: 6px;
+            right: 10px;
+            display: inline-block;
+            font-size: 0.5rem;
+        }
+
+        qr {
+            position: fixed;
+            display: none;
+            top: 0;
+            left: 0;
+
+            z-index: 30;
+
+            background-color: rgba(0, 0, 0, 0.8);
+            width: 100vw;
+            height: 100vh;
+        }
+
+        canvas {
+            display: block;
+            position: fixed;
+
+            width: 80vw;
+            height: 80vw;
+
+            margin: auto;
+            top: 50vh;
+            left: 50vw;
+            transform: translate(-50%, -50%);
         }
     </style>
 
@@ -128,9 +167,13 @@
         let stuff = []
         let passcode = ''
 
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
+        })
+
         const message = ((text, deletable = true) => {
             const msg = document.createElement('msg')
-            msg.innerText = text
+            msg.innerHTML = text
 
             let clicked = false
 
@@ -165,12 +208,27 @@
         const encrypt = ((text, code) => CryptoJS.AES.encrypt(text, code))
         const decrypt = ((text, code) => CryptoJS.AES.decrypt(text, code).toString(CryptoJS.enc.Utf8))
 
-        window.onerror = (e) => alert(e)
+        window.onerror = (e) => {
+
+        }
 
         const init = (() => {
             console.log('CryptoJS was successfully loaded!')
 
             passcode = (localStorage.getItem('passcode') ?? 'null')
+
+            if (params.data) {
+                if (localStorage.getItem('passcode')) {
+                    let output = prompt('Do you want to import and overwrite your currently existing data? Type in your current passcode to overwrite.')
+                    if (decrypt(passcode, output) === output) {
+                        overwrite()
+                    } else {
+                        alert('Incorrect passcode.')
+                    }
+                } else overwrite()
+
+                location.reload()
+            }
 
             if (passcode === 'null') {
                 message('Please choose a passcode to encrypt your data with and type it down below, Then press enter.', false)
@@ -178,9 +236,9 @@
                 input.onkeypress = (e) => {
                     if (e.key === 'Enter') {
                         passcode = encrypt(input.value, input.value)
-                        input.value = ''
                         localStorage.setItem('passcode', passcode)
                         localStorage.setItem('data', encrypt('[]', input.value))
+                        input.value = ''
                         location.reload()
                     }
                 }
@@ -194,6 +252,8 @@
                             passcode = decrypt(passcode, input.value)
                             input.value = ''
 
+                            input.setAttribute('type', '')
+
                             console.log(decrypt((localStorage.getItem('data')), passcode))
                             stuff = JSON.parse(decrypt((localStorage.getItem('data') ?? encrypt('[]', passcode)), passcode))
 
@@ -203,13 +263,42 @@
                             if (stuff.length === 0) {
                                 message('There are no messages here, Send one to get started. Double click a message, and it will be deleted.')
                             } else {
-                                for (let msg of stuff) message(msg)
+                                let remaining = stuff
+                                let q = -1
+
+                                const run = (() => {
+                                    if(remaining[0]) {
+                                        message(remaining[0])
+                                        remaining = remaining.slice(1)
+                                    } else clearInterval(q)
+                                })
+
+                                run()
+                                q = setInterval(run, 2000 / remaining.length)
                             }
 
                             input.onkeypress = (j) => {
-                                if(j.key === 'Enter') {
+                                if (j.key === 'Enter') {
+                                    if (input.value === '__clear') {
+                                        localStorage.setItem('data', encrypt('[]', passcode))
+                                        message('Your data has been completely wiped.')
+                                        return
+                                    }
+
+                                    if (input.value === '__share') {
+                                        let qr = new QRious({
+                                            element: document.querySelector('canvas'),
+                                            value: location.href + '?data=' + localStorage.getItem('data') + '&passcode=' + localStorage.getItem('passcode'),
+                                            level: 'Q',
+                                            size: 500
+                                        })
+                                        document.querySelector('qr').style.display = 'block'
+
+                                        return
+                                    }
+
                                     let current = new Date()
-                                    let text = input.value + '\n' + current.toLocaleString('en-us',{month:'short', year:'numeric', day: 'numeric'}) + ' at ' + current.toLocaleTimeString('en-gb', {hour:'2-digit',minute:'2-digit'})
+                                    let text = input.value + '\n<date>' + current.toLocaleString('en-us', { month: 'short', year: 'numeric', day: 'numeric' }) + ' at ' + current.toLocaleTimeString('en-gb', { hour: '2-digit', minute: '2-digit' }) + '</date>'
                                     input.value = ''
 
                                     message(text)
@@ -229,6 +318,14 @@
         const g = (() => {
             if (globalThis['CryptoJS']) init()
             else setTimeout(g, 100)
+        })
+
+        const overwrite = (() => {
+            let data = params.data
+            let passcode = params.passcode
+
+            localStorage.setItem('data', data)
+            localStorage.setItem('passcode', passcode)
         })
 
         g()
