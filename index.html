@@ -4,7 +4,7 @@
 <head>
     <title>Yoko</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="/crypto.js" defer></script>
+    <script src="crypto.js" defer></script>
 </head>
 
 <body>
@@ -193,6 +193,8 @@
 
                             console.log(decrypt((localStorage.getItem('data')), passcode))
                             stuff = JSON.parse(decrypt((localStorage.getItem('data') ?? encrypt('[]', passcode)), passcode))
+
+                            input.setAttribute('placeholder', 'Type a message...')
 
                             clear()
                             if (stuff.length === 0) {
