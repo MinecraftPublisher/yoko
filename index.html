@@ -165,6 +165,8 @@
         const encrypt = ((text, code) => CryptoJS.AES.encrypt(text, code))
         const decrypt = ((text, code) => CryptoJS.AES.decrypt(text, code).toString(CryptoJS.enc.Utf8))
 
+        window.onerror = (e) => alert(e)
+
         const init = (() => {
             console.log('CryptoJS was successfully loaded!')
 
