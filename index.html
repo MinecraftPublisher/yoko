@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Yoko</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="/crypto.js" defer></script>
+</head>
+
+<body>
+    <messages>
+    </messages>
+    <input autocapitalize="false" autocomplete="false" spellcheck="false" class="message"
+        placeholder="Enter your passcode...">
+    <hr>
+
+    <style>
+        body {
+            font-size: 1.5rem;
+
+            background: linear-gradient(48deg, rgb(52, 52, 52) 0%, rgb(22, 22, 22) 100%);
+
+            color: rgb(223, 223, 223);
+
+
+
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        input.message {
+            position: fixed;
+            display: block;
+
+            width: 100vw;
+            font-size: 1.2rem;
+
+            background-color: inherit;
+            color: inherit;
+
+            margin: 0;
+            padding: 1rem;
+            padding-top: 1rem;
+
+            bottom: 0.5rem;
+            left: 0;
+
+            outline: none;
+            border: none;
+
+            z-index: 3;
+        }
+
+        input.message:focus~hr {
+            box-shadow: 0px 0px 200px 150px rgba(58, 58, 58, 0.7);
+        }
+
+        hr {
+            position: fixed;
+
+            z-index: 2;
+
+            top: calc(100vh - 2rem);
+            left: 0;
+
+            border: none;
+
+            box-shadow: 0px 0px 80px 50px rgba(58, 58, 58, 0.7);
+
+            transition: box-shadow 0.5s;
+
+            width: 100vw;
+        }
+
+        messages {
+            position: fixed;
+
+            top: 0;
+            left: 0;
+
+            height: calc(100vh - 6rem);
+            width: 100vw;
+
+            padding-top: 5rem;
+
+            color: rgb(32, 32, 32);
+
+            z-index: 3;
+
+            padding: 1rem;
+        }
+
+        @keyframes appear {
+            from {
+                transform: translateX(-5rem);
+                opacity: 0.1;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        msg {
+            max-width: 60vw;
+            font-size: 1rem;
+            line-break: strict;
+
+            border: 2px solid rgba(159, 255, 223, 0.9);
+            background-color: rgba(159, 255, 223, 0.9);
+
+            padding: 15px;
+            display: block;
+            margin-top: 1rem;
+
+            border-radius: 12px;
+            border-bottom-left-radius: 0;
+
+            transition: background-color 0.5s, border 0.5s;
+
+            animation: appear 2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+    </style>
+
+    <script>
+        const input = document.querySelector('input.message')
+
+        let stuff = []
+        let passcode = ''
+
+        const message = ((text, deletable = true) => {
+            const msg = document.createElement('msg')
+            msg.innerText = text
+
+            let clicked = false
+
+            if (deletable) {
+                msg.onclick = (e) => {
+                    if (clicked === true) {
+                        clicked = false
+                        document.querySelector('messages').removeChild(msg)
+                        stuff = stuff.filter((e, i) => !((e === msg.innerText) && (stuff.indexOf(e) === i)))
+                        localStorage.setItem('data', encrypt(JSON.stringify(stuff), passcode))
+                    } else {
+                        clicked = true
+                        msg.style.backgroundColor = 'rgb(255, 142, 142)'
+                        msg.style.borderColor = 'rgb(255, 142, 142)'
+
+                        setTimeout(() => {
+                            clicked = false
+                            msg.style.backgroundColor = ''
+                            msg.style.borderColor = ''
+                        }, 2000)
+                    }
+                }
+            }
+
+            document.querySelector('messages').appendChild(msg)
+        })
+
+        const clear = ((text) => {
+            document.querySelector('messages').innerHTML = ``
+        })
+
+        const encrypt = ((text, code) => CryptoJS.AES.encrypt(text, code))
+        const decrypt = ((text, code) => CryptoJS.AES.decrypt(text, code).toString(CryptoJS.enc.Utf8))
+
+        const init = (() => {
+            console.log('CryptoJS was successfully loaded!')
+
+            passcode = (localStorage.getItem('passcode') ?? 'null')
+
+            if (passcode === 'null') {
+                message('Please choose a passcode to encrypt your data with and type it down below, Then press enter.', false)
+
+                input.onkeypress = (e) => {
+                    if (e.key === 'Enter') {
+                        passcode = encrypt(input.value, input.value)
+                        input.value = ''
+                        localStorage.setItem('passcode', passcode)
+                        location.reload()
+                    }
+                }
+            } else {
+                message('Please enter your passcode below to unlock your data.', false)
+
+                input.onkeypress = (e) => {
+                    if (e.key === 'Enter') {
+                        if (decrypt(passcode, input.value) === input.value) {
+                            message('Please wait while we decrypt your data...', false)
+                            passcode = decrypt(passcode, input.value)
+                            input.value = ''
+
+                            console.log(decrypt((localStorage.getItem('data')), passcode))
+                            stuff = JSON.parse(decrypt((localStorage.getItem('data') ?? encrypt('[]', passcode)), passcode))
+
+                            clear()
+                            if (stuff.length === 0) {
+                                message('There are no messages here, Send one to get started. Double click a message, and it will be deleted.')
+                            } else {
+                                for (let msg of stuff) message(msg)
+                            }
+
+                            input.onkeypress = (j) => {
+                                if(j.key === 'Enter') {
+                                    let text = input.value + '\n' + current.toLocaleString('en-us',{month:'short', year:'numeric', day: 'numeric'}) + ' at ' + current.toLocaleTimeString('en-gb', {hour:'2-digit',minute:'2-digit'})
+                                    input.value = ''
+
+                                    message(text)
+                                    stuff.push(text)
+                                    localStorage.setItem('data', encrypt(JSON.stringify(stuff), passcode))
+                                }
+                            }
+                        } else {
+                            input.value = ''
+                            message('Incorrect passcode! Please try again.', false)
+                        }
+                    }
+                }
+            }
+        })
+
+        const g = (() => {
+            if (globalThis['CryptoJS']) init()
+            else setTimeout(g, 100)
+        })
+
+        g()
+    </script>
+</body>
+
+</html>
