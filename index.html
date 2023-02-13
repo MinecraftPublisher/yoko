@@ -54,7 +54,7 @@
         }
 
         input.message:focus~hr {
-            box-shadow: 0px 0px 200px 150px rgba(58, 58, 58, 0.7);
+            box-shadow: 0px 0px 200px 150px rgba(58, 58, 58, 0.9);
         }
 
         hr {
@@ -67,7 +67,7 @@
 
             border: none;
 
-            box-shadow: 0px 0px 80px 50px rgba(58, 58, 58, 0.7);
+            box-shadow: 0px 0px 80px 50px rgba(58, 58, 58, 0.9);
 
             transition: box-shadow 0.5s;
 
@@ -90,6 +90,8 @@
             z-index: 3;
 
             padding: 1rem;
+
+            overflow: scroll;
         }
 
         @keyframes appear {
@@ -163,6 +165,7 @@
 
     <script>
         const input = document.querySelector('input.message')
+        const messages = document.querySelector('messages')
 
         const version = '1.0.1-0'
 
@@ -183,7 +186,7 @@
                 msg.onclick = (e) => {
                     if (clicked === true) {
                         clicked = false
-                        document.querySelector('messages').removeChild(msg)
+                        messages.removeChild(msg)
                         let index = stuff.findIndex(e => (e === msg.innerHTML))
                         stuff = stuff.filter((e, i) => i !== index)
                         localStorage.setItem('data', encrypt(JSON.stringify(stuff), passcode))
@@ -201,11 +204,12 @@
                 }
             }
 
-            document.querySelector('messages').appendChild(msg)
+            messages.scrollTop = messages.scrollHeight
+            messages.appendChild(msg)
         })
 
         const clear = ((text) => {
-            document.querySelector('messages').innerHTML = ``
+            messages.innerHTML = ``
         })
 
         const encrypt = ((text, code) => CryptoJS.AES.encrypt(text, code))
@@ -250,7 +254,7 @@
 
                 input.onkeypress = (e) => {
                     if (e.key === 'Enter') {
-                        if(input.value === '__clear') {
+                        if (input.value === '__clear') {
                             localStorage.clear()
                             location.reload()
                         }
@@ -278,7 +282,7 @@
                                 let q = -1
 
                                 const run = (() => {
-                                    if(remaining[0]) {
+                                    if (remaining[0]) {
                                         message(remaining[0])
                                         remaining = remaining.slice(1)
                                     } else clearInterval(q)
@@ -307,6 +311,8 @@
 
                                         return
                                     }
+
+                                    if (input.value === '') return
 
                                     let current = new Date()
                                     let text = input.value + '\n<date>' + current.toLocaleString('en-us', { month: 'short', year: 'numeric', day: 'numeric' }) + ' at ' + current.toLocaleTimeString('en-gb', { hour: '2-digit', minute: '2-digit' }) + '</date>'
