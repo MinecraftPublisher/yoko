@@ -164,6 +164,8 @@
     <script>
         const input = document.querySelector('input.message')
 
+        const version = '1.0.0'
+
         let stuff = []
         let passcode = ''
 
@@ -227,7 +229,7 @@
                     }
                 } else overwrite()
 
-                location.reload()
+                location.replace(location.href.split('?')[0])
             }
 
             if (passcode === 'null') {
@@ -247,6 +249,8 @@
 
                 input.onkeypress = (e) => {
                     if (e.key === 'Enter') {
+                        if(input.value === '__clear') localStorage.clear()
+
                         if (decrypt(passcode, input.value) === input.value) {
                             message('Please wait while we decrypt your data...', false)
                             passcode = decrypt(passcode, input.value)
@@ -280,7 +284,7 @@
                             input.onkeypress = (j) => {
                                 if (j.key === 'Enter') {
                                     if (input.value === '__clear') {
-                                        localStorage.setItem('data', encrypt('[]', passcode))
+                                        localStorage.clear()
                                         message('Your data has been completely wiped.')
                                         return
                                     }
@@ -288,7 +292,7 @@
                                     if (input.value === '__share') {
                                         let qr = new QRious({
                                             element: document.querySelector('canvas'),
-                                            value: 'https://minecraftpublisher.github.io/yoko/?data=' + localStorage.getItem('data') + '&passcode=' + localStorage.getItem('passcode'),
+                                            value: 'https://minecraftpublisher.github.io/yoko/?data=' + btoa(localStorage.getItem('data')) + '&passcode=' + btoa(localStorage.getItem('passcode')),
                                             level: 'Q',
                                             size: 500
                                         })
@@ -324,10 +328,11 @@
             let data = params.data
             let passcode = params.passcode
 
-            localStorage.setItem('data', data)
-            localStorage.setItem('passcode', passcode)
+            localStorage.setItem('data', atob(data))
+            localStorage.setItem('passcode', atob(passcode))
         })
 
+        message('Yoko v' + version)
         g()
     </script>
 </body>
