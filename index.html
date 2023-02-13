@@ -203,6 +203,7 @@
 
                             input.onkeypress = (j) => {
                                 if(j.key === 'Enter') {
+                                    let current = new Date()
                                     let text = input.value + '\n' + current.toLocaleString('en-us',{month:'short', year:'numeric', day: 'numeric'}) + ' at ' + current.toLocaleTimeString('en-gb', {hour:'2-digit',minute:'2-digit'})
                                     input.value = ''
 
