@@ -164,7 +164,7 @@
     <script>
         const input = document.querySelector('input.message')
 
-        const version = '1.0.1'
+        const version = '1.0.1-0'
 
         let stuff = []
         let passcode = ''
@@ -184,7 +184,8 @@
                     if (clicked === true) {
                         clicked = false
                         document.querySelector('messages').removeChild(msg)
-                        stuff = stuff.filter((e, i) => !((e === msg.innerText) && (stuff.indexOf(e) === i)))
+                        let index = stuff.findIndex(e => (e === msg.innerHTML))
+                        stuff = stuff.filter((e, i) => i !== index)
                         localStorage.setItem('data', encrypt(JSON.stringify(stuff), passcode))
                     } else {
                         clicked = true
