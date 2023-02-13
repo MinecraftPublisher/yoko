@@ -180,7 +180,7 @@
                         passcode = encrypt(input.value, input.value)
                         input.value = ''
                         localStorage.setItem('passcode', passcode)
-                        localStorage.setItem('data', encrypt('[]', passcode))
+                        localStorage.setItem('data', encrypt('[]', input.value))
                         location.reload()
                     }
                 }
