@@ -12,8 +12,8 @@ sw.addEventListener('fetch', (e) => {
         const cache = await caches.open('yoko')
 				let match = await cache.match(e.request)
              let resp = await fetch(e.request).catch(() => match ?? new Response('Offline'))
-             cache.put(e.request, resp)
+             cache.put(e.request, await resp.clone())
 
-        return resp
+        return await resp.clone()
     })())
 })
