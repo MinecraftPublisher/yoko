@@ -5,7 +5,7 @@
     <title>Yoko</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    
+
     <meta name="apple-mobile-web-app-status-bar-style" content="">
     <meta name="theme-color" content="">
 
@@ -55,7 +55,7 @@
             margin: 0;
             padding: 1rem;
             padding-top: 1rem;
-            padding-bottom: 1.5rem;
+            padding-bottom: 2rem;
 
             bottom: 0rem;
             left: 0;
@@ -328,6 +328,8 @@
                 keypress.default = (e) => {
                     if (e.key === 'Enter') {
                         if (input.value === '.clear') {
+                            input.value = ''
+                            input.setAttribute('disabled', '')
                             message('Your data has been completely wiped.')
                             localStorage.clear()
                             location.reload()
@@ -389,7 +391,10 @@
                                 if (j.key === 'Enter') {
                                     if (input.value === '.clear') {
                                         localStorage.clear()
+                                        messages.innerHTML = ''
                                         message('Your data has been completely wiped.')
+                                        input.value = ''
+                                        input.setAttribute('disabled', '')
                                         return
                                     }
 
