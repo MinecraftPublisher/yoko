@@ -26,9 +26,9 @@ function getRelativeTimeString(date, lang = navigator.language) {
 
 const buildStatus = (async () => {
     let last_build = await fetch('last_build.txt').then(e => e.text()).catch(e => 'failed')
-    
+
     if(last_build === 'failed') return 'Unable to fetch'
-    return `Last built ${getRelativeTimeString()}`
+    return `Last built ${getRelativeTimeString(parseInt(last_build) * 1000)}`
 })
 
 const helpers = {
