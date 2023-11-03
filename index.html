@@ -3,7 +3,7 @@
 
 <head>
     <title>Yoko</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
 
     <meta name="apple-mobile-web-app-status-bar-style" content="">
@@ -11,7 +11,7 @@
 
     <link rel="shortcut icon" href="webicon.png">
     <link rel="apple-touch-icon" href="journal.png">
-    
+
     <script src="crypto.js" defer></script>
 </head>
 
@@ -26,6 +26,14 @@
     <hr>
 
     <style>
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sar: env(safe-area-inset-right);
+            --sab: env(safe-area-inset-bottom);
+            /* THIS ONE GETS US THE HOME BAR HEIGHT */
+            --sal: env(safe-area-inset-left);
+        }
+
         html {
             width: 100vw !important;
             overflow-x: hidden;
@@ -55,7 +63,7 @@
             margin: 0;
             padding: 1rem;
             padding-top: 1rem;
-            padding-bottom: 2rem;
+            padding-bottom: var(--sab);
 
             bottom: 0rem;
             left: 0;
@@ -226,7 +234,7 @@
 
         const isPWA = (navigator.standalone ?? false) || window.matchMedia('(display-mode: standalone)').matches
 
-        const version = '1.1 - Build 0'
+        const version = '1.1 - Build 1'
 
         let stuff = []
         let passcode = ''
