@@ -30,10 +30,8 @@ jobs:
         uses: actions/checkout@v3
       - name: Setup Pages
         uses: actions/configure-pages@v3
-      - name: Add timestamp
-        run: "date +%s > ./last_build.txt"
-      - name: Move files
-        run: "mkdir ../_site && mv ./* ../_site/ && mv ../_site ./_site"
+      - name: Move files and add timestamp
+        run: "mkdir ../_site && mv ./* ../_site/ && mv ../_site ./_site && date +%s > ./_site/last_build.txt"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
 
