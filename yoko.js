@@ -10,7 +10,9 @@ const theme = {
 }
 
 const buildStatus = (async () => {
-    const html = await fetch('https://github.com/MinecraftPublisher/yoko').then(e => e.text()).catch(e => '<summary class="color-failed">')
+    let html = await fetch('https://github.com/MinecraftPublisher/yoko').then(e => e.text())
+    if(html === 'Offline') html = '<summary class="color-failed">'
+    
     let select = (html.match(/<summary class="(color-|hx_dot-)[^"]+">/g) ?? ['<summary class="color-fg-success">'])[0]
     select = select.substring(16, select.length - 2)
 
