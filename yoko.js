@@ -1,3 +1,5 @@
+const version = '1.1 - Build 3'
+
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
 }
@@ -48,8 +50,6 @@ const input = document.querySelector('input.message')
 const messages = document.querySelector('messages')
 
 const isPWA = (navigator.standalone ?? false) || window.matchMedia('(display-mode: standalone)').matches
-
-const version = '1.1 - Build 2'
 
 let stuff = []
 let passcode = ''
