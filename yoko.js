@@ -9,13 +9,26 @@ const theme = {
     color: localStorage.getItem('theme--color') ?? '9fffdfe6'
 }
 
-const buildStatus = (async () => {
-    let svg = await fetch('https://github.com/MinecraftPublisher/yoko/actions/workflows/gh-pages.yml/badge.svg').then(e => e.text())
-    let title = (svg.match(/<title>Deploy raw HTML with Github Pages - [^>]<\/title>/g) ?? ['<title>Deploy raw HTML with Github Pages - error</title>'])[0]
-    title = title.substring(32, title.length - 8).toLowerCase()
+function getRelativeTimeString(date, lang = navigator.language) {
+    const timeMs = typeof date === 'number' ? date : date.getTime()
+    const deltaSeconds = Math.round((timeMs - Date.now()) / 1000)
 
-    title[0] = title[0].toUpperCase()
-    return title
+    const cutoffs = [60, 3600, 86400, 86400 * 7, 86400 * 30, 86400 * 365, Infinity]
+
+    const units = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year']
+    const unitIndex = cutoffs.findIndex(cutoff => cutoff > Math.abs(deltaSeconds))
+
+    const divisor = unitIndex ? cutoffs[unitIndex - 1] : 1
+    const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' })
+
+    return rtf.format(Math.floor(deltaSeconds / divisor), units[unitIndex])
+}
+
+const buildStatus = (async () => {
+    let last_build = await fetch('last_build.txt').then(e => e.text()).catch(e => 'failed')
+    
+    if(last_build === 'failed') return 'Unable to fetch'
+    return `Last built ${getRelativeTimeString()}`
 })
 
 const helpers = {
