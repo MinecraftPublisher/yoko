@@ -7,17 +7,11 @@ const sw = self
 
 let online = false
 
-sw.addEventListener('online', () => online = true)
-sw.addEventListener('offline', () => online = false)
-
 sw.addEventListener('fetch', (e) => {
     e.respondWith((async () => {
         const cache = await caches.open('yoko')
+				let match = await cache.match(e.request)
 
-        if(online) return await fetch(e.request)
-        else {
-            let match = await cache.match(e.request)
-            return match ?? new Response('Offline')
-        }
+        return await fetch(e.request).catch(() => match ?? new Response('Offline'))
     })())
 })
