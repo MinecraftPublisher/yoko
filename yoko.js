@@ -10,19 +10,12 @@ const theme = {
 }
 
 const buildStatus = (async () => {
-    let html = await fetch('https://github.com/MinecraftPublisher/yoko').then(e => e.text())
-    if(html === 'Offline') html = '<summary class="color-failed">'
-    
-    let select = (html.match(/<summary class="(color-|hx_dot-)[^"]+">/g) ?? ['<summary class="color-fg-success">'])[0]
-    select = select.substring(16, select.length - 2)
+    let svg = await fetch('https://github.com/MinecraftPublisher/yoko/actions/workflows/pages/pages-build-deployment/badge.svg').then(e => e.text())
+    let title = (svg.match(/<title>pages-build-deployment - [^>]<\/title>/g) ?? ['<title>pages-build-deployment - error</title>'])[0]
+    title = title.substring(32, title.length - 8).toLowerCase()
 
-    const DICT = {
-        'color-failed': 'Failed to fetch',
-        'hx_dot-fill-pending-icon': 'Updating...',
-        'color-fg-success': 'Up to date'
-    }
-
-    return DICT[select]
+    title[0] = title[0].toUpperCase()
+    return title
 })
 
 const helpers = {
