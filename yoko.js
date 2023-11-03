@@ -49,7 +49,7 @@ const messages = document.querySelector('messages')
 
 const isPWA = (navigator.standalone ?? false) || window.matchMedia('(display-mode: standalone)').matches
 
-const version = '1.1 - Build 1'
+const version = '1.1 - Build 2'
 
 let stuff = []
 let passcode = ''
@@ -294,6 +294,7 @@ const init = (() => {
                                 theme.background = background
                                 theme.color = color
 
+                                input.value = ''
                                 applyTheme()
                                 return
                             }
