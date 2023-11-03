@@ -10,8 +10,8 @@ const theme = {
 }
 
 const buildStatus = (async () => {
-    let svg = await fetch('https://github.com/MinecraftPublisher/yoko/actions/workflows/pages/pages-build-deployment/badge.svg').then(e => e.text())
-    let title = (svg.match(/<title>pages-build-deployment - [^>]<\/title>/g) ?? ['<title>pages-build-deployment - error</title>'])[0]
+    let svg = await fetch('https://github.com/MinecraftPublisher/yoko/actions/workflows/gh-pages.yml/badge.svg').then(e => e.text())
+    let title = (svg.match(/<title>Deploy raw HTML with Github Pages - [^>]<\/title>/g) ?? ['<title>Deploy raw HTML with Github Pages - error</title>'])[0]
     title = title.substring(32, title.length - 8).toLowerCase()
 
     title[0] = title[0].toUpperCase()
