@@ -3,8 +3,16 @@
 
 <head>
     <title>Yoko</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="stuff.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <meta name="apple-mobile-web-app-status-bar-style" content="">
+    <meta name="theme-color" content="">
+
+    <link rel="shortcut icon" href="webicon.png">
+    <link rel="apple-touch-icon" href="journal.png">
+    
+    <script src="crypto.js" defer></script>
 </head>
 
 <body>
@@ -18,14 +26,18 @@
     <hr>
 
     <style>
+        html {
+            width: 100vw !important;
+            overflow-x: hidden;
+        }
+
         body {
             font-size: 1.5rem;
+            width: 100vw !important;
 
-            background: linear-gradient(48deg, rgb(52, 52, 52) 0%, rgb(22, 22, 22) 100%);
+            background: #161616;
 
             color: rgb(223, 223, 223);
-
-
 
             font-family: Arial, Helvetica, sans-serif;
         }
@@ -34,7 +46,7 @@
             position: fixed;
             display: block;
 
-            width: calc(100vw - 2rem);
+            width: 100vw !important;
             font-size: 1.2rem;
 
             background-color: inherit;
@@ -43,8 +55,9 @@
             margin: 0;
             padding: 1rem;
             padding-top: 1rem;
+            padding-bottom: 1.5rem;
 
-            bottom: 0.5rem;
+            bottom: 0rem;
             left: 0;
 
             outline: none;
@@ -113,8 +126,8 @@
 
             position: relative;
 
-            border: 2px solid rgba(159, 255, 223, 0.9);
-            background-color: rgba(159, 255, 223, 0.9);
+            border: 2px solid #9fffdfe6;
+            background-color: #9fffdfe6;
 
             padding: 15px;
             display: block;
@@ -133,7 +146,7 @@
             bottom: 6px;
             right: 10px;
             display: inline-block;
-            font-size: 0.5rem;
+            font-size: 0.9rem;
         }
 
         qr {
@@ -153,8 +166,8 @@
             display: block;
             position: fixed;
 
-            width: 80vw;
-            height: 80vw;
+            width: min(70vh, 70vw);
+            height: min(70vh, 70vw);
 
             margin: auto;
             top: 50vh;
@@ -163,11 +176,57 @@
         }
     </style>
 
+    <style class="theme"></style>
+
     <script>
+        const theme = {
+            background: localStorage.getItem('theme--background') ?? '161616',
+            color: localStorage.getItem('theme--color') ?? '9fffdfe6'
+        }
+
+        const helpers = {
+            hex_to_rgb: (hex) => {
+                let result = /^#?([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})?$/i.exec(hex)
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : null
+            },
+            hex_inverse_bw: (hex) => {
+                let rgb = helpers.hex_to_rgb(hex)
+                let luminance = (0.2126 * rgb['r'] + 0.7152 * rgb['g'] + 0.0722 * rgb['b'])
+                return (luminance < 140) ? '#ffffff' : '#000000'
+            }
+        }
+
+        const applyTheme = (() => {
+            document.querySelector('.theme').innerHTML = `msg {
+                border: 2px solid #${theme.color} !important;
+                background-color: #${theme.color} !important;
+
+                color: ${helpers.hex_inverse_bw('#' + theme.color)} !important;
+            }
+            
+            body {
+                background-color: #${theme.background} !important;
+            }`
+
+            document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]').setAttribute('content', `#${theme.background}`)
+            document.querySelector('meta[name=theme-color]').setAttribute('content', `#${theme.background}`)
+
+            localStorage.setItem('theme--background', theme.background)
+            localStorage.setItem('theme--color', theme.color)
+        })
+
+        applyTheme()
+
         const input = document.querySelector('input.message')
         const messages = document.querySelector('messages')
 
-        const version = '1.0.1-0'
+        const isPWA = (navigator.standalone ?? false) || window.matchMedia('(display-mode: standalone)').matches
+
+        const version = '1.1 - Build 0'
 
         let stuff = []
         let passcode = ''
@@ -199,7 +258,7 @@
                             clicked = false
                             msg.style.backgroundColor = ''
                             msg.style.borderColor = ''
-                        }, 2000)
+                        }, 1000)
                     }
                 }
             }
@@ -212,11 +271,25 @@
             messages.innerHTML = ``
         })
 
+        if (!isPWA) {
+            input.style.display = 'none'
+            document.querySelector('hr').style.display = 'none'
+            message('<div style="text-align: center;"><img src="webicon.png" width=150 height=150><br>Yoko v' + version + '</div>', false)
+            message('Please add this website to your home screen to use it.', false)
+            message('This pwa is not supported on desktop devices.', false)
+            throw 'ERR_NOT_SUPPORTED'
+        }
+
         const encrypt = ((text, code) => CryptoJS.AES.encrypt(text, code))
         const decrypt = ((text, code) => CryptoJS.AES.decrypt(text, code).toString(CryptoJS.enc.Utf8))
 
         window.onerror = (e) => {
 
+        }
+
+        let keypress = { default: () => { } }
+        input.onkeypress = (e) => {
+            keypress.default(e)
         }
 
         const init = (() => {
@@ -240,7 +313,7 @@
             if (passcode === 'null') {
                 message('Please choose a passcode to encrypt your data with and type it down below, Then press enter.', false)
 
-                input.onkeypress = (e) => {
+                keypress.default = (e) => {
                     if (e.key === 'Enter') {
                         passcode = encrypt(input.value, input.value)
                         localStorage.setItem('passcode', passcode)
@@ -252,21 +325,36 @@
             } else {
                 message('Please enter your passcode below to unlock your data.', false)
 
-                input.onkeypress = (e) => {
+                keypress.default = (e) => {
                     if (e.key === 'Enter') {
-                        if (input.value === '__clear') {
+                        if (input.value === '.clear') {
+                            message('Your data has been completely wiped.')
                             localStorage.clear()
                             location.reload()
+                            // message('Cannot wipe data while locked. Unlock your data to continue.', false)
+                            // return
                         }
 
-                        if (decrypt(passcode, input.value) === input.value) {
+                        if (input.value === '.share') {
+                            message('Cannot move data while locked. Unlock your data to continue.', false)
+                            return
+                        }
+
+                        if (input.value === '.change') {
+                            message('Cannot change passcode while locked. Unlock your data to continue.', false)
+                        }
+
+                        if (input.value.startsWith('.theme')) {
+                            message('Cannot customize theme while locked. Unlock your data to continue.', false)
+                        }
+
+                        if (input.value !== '' && decrypt(passcode, input.value) === input.value) {
                             message('Please wait while we decrypt your data...', false)
                             passcode = decrypt(passcode, input.value)
                             input.value = ''
 
                             input.setAttribute('type', '')
 
-                            console.log(decrypt((localStorage.getItem('data')), passcode))
                             stuff = JSON.parse(decrypt((localStorage.getItem('data') ?? encrypt('[]', passcode)), passcode))
 
                             input.setAttribute('placeholder', 'Type a message...')
@@ -274,9 +362,9 @@
                             clear()
                             if (stuff.length === 0) {
                                 message('There are no messages here, Send one to get started. Double click a message, and it will be deleted.')
-                                message('Use "__clear" as your input anywhere in the app to wipe your data.')
-                                message('If you want to move your data to another device, Use "__share" as your input while unlocked to display a QR code that can be scanned to move your data.')
-                                messaeg('Remember, The relocated data will still be encrypted with the passcode used on the previous device.')
+                                message('Use ".clear" as your input anywhere in the app to wipe your data.')
+                                message('If you want to move your data to another device, Use ".share" as your input while unlocked to display a QR code that can be scanned to move your data.')
+                                message('Remember, The relocated data will still be encrypted with the passcode used on the previous device.')
                             } else {
                                 let remaining = stuff
                                 let q = -1
@@ -285,22 +373,31 @@
                                     if (remaining[0]) {
                                         message(remaining[0])
                                         remaining = remaining.slice(1)
+
+                                        messages.scrollTo({
+                                            top: messages.scrollHeight,
+                                            behavior: 'smooth'
+                                        })
                                     } else clearInterval(q)
                                 })
 
                                 run()
-                                q = setInterval(run, 2000 / remaining.length)
+                                q = setInterval(run, 250 / remaining.length)
                             }
 
-                            input.onkeypress = (j) => {
+                            keypress.default = (j) => {
                                 if (j.key === 'Enter') {
-                                    if (input.value === '__clear') {
+                                    if (input.value === '.clear') {
                                         localStorage.clear()
                                         message('Your data has been completely wiped.')
                                         return
                                     }
 
-                                    if (input.value === '__share') {
+                                    if (input.value === '.share') {
+                                        messages.innerHTML = ''
+                                        message('Your messages have been hidden for privacy.', false)
+                                        message('Click anywhere to reload.', false)
+
                                         let qr = new QRious({
                                             element: document.querySelector('canvas'),
                                             value: 'https://minecraftpublisher.github.io/yoko/?data=' + btoa(localStorage.getItem('data')) + '&passcode=' + btoa(localStorage.getItem('passcode')),
@@ -309,6 +406,67 @@
                                         })
                                         document.querySelector('qr').style.display = 'block'
 
+                                        document.onclick = (e) => location.reload()
+
+                                        return
+                                    }
+
+                                    if (input.value === '.change') {
+                                        messages.innerHTML = ''
+                                        message('Your messages have been hidden for privacy.', false)
+
+                                        message('Enter your new password.', false)
+
+                                        input.value = ''
+                                        input.setAttribute('type', 'password')
+                                        input.placeholder = 'Enter new password...'
+
+                                        keypress.default = (k) => {
+                                            if (k.key === 'Enter') {
+                                                let newpassword = input.value
+                                                input.value = ''
+                                                let encrypted = encrypt(newpassword, newpassword)
+                                                let recrypted_data = encrypt(JSON.stringify(stuff), newpassword)
+
+                                                localStorage.setItem('passcode', encrypted)
+                                                localStorage.setItem('data', recrypted_data)
+                                                location.reload()
+                                            }
+                                        }
+
+                                        return
+                                    }
+
+                                    if (input.value.startsWith('.theme')) {
+                                        let _color = input.value.substring('.theme '.length)
+                                        if (_color === '') {
+                                            message('`.theme [background color] [foreground/message color]`<br>Current theme:<br>Background color: #' + theme.background + '<br>Message color: #' + theme.color + '<br><br>This message is not saved to your database.')
+                                            return
+                                        }
+
+                                        let colors = _color.split(' ')
+                                        if (colors.length !== 2) {
+                                            message('Invalid syntax.<br>`.theme [background color] [foreground/message color]`')
+                                        }
+
+                                        let background = colors[0]
+                                        if (background.startsWith('#')) background = background.substring(1)
+
+                                        let color = colors[1]
+                                        if (color.startsWith('#')) color = color.substring(1)
+
+                                        if (background.length > 8 || background.length < 2) {
+                                            message('Invalid hex background color. Should optionally start with a # and be withing range of [2, 8] encoded in hex format.')
+                                        }
+
+                                        if (color.length > 8 || color.length < 2) {
+                                            message('Invalid hex foreground/message color. Should optionally start with a # and be withing range of [2, 8] encoded in hex format.')
+                                        }
+
+                                        theme.background = background
+                                        theme.color = color
+
+                                        applyTheme()
                                         return
                                     }
 
@@ -345,7 +503,7 @@
             localStorage.setItem('passcode', atob(passcode))
         })
 
-        message('Yoko v' + version)
+        message('<div style="text-align: center;"><img src="webicon.png" width=150 height=150><br>Yoko v' + version + '</div>', false)
         g()
     </script>
 </body>
