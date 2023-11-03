@@ -156,3 +156,11 @@ canvas {
 	left: 50vw;
 	transform: translate(-50%, -50%);
 }
+
+.build-status {
+	color: #60ecff;
+	background-color: #000;
+	border: 1.5px solid #45ff9c;
+	padding: 0.35rem 0.8rem;
+	border-radius: 7px;
+}
