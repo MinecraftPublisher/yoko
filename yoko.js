@@ -74,8 +74,8 @@ const message = ((text, deletable = true) => {
                 localStorage.setItem('data', encrypt(JSON.stringify(stuff), passcode))
             } else {
                 clicked = true
-                msg.style.backgroundColor = 'rgb(255, 142, 142)'
-                msg.style.borderColor = 'rgb(255, 142, 142)'
+                msg.style.backgroundColor = 'rgb(255, 142, 142) !important'
+                msg.style.borderColor = 'rgb(255, 142, 142) !important'
 
                 setTimeout(() => {
                     clicked = false
