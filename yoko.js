@@ -9,6 +9,14 @@ const theme = {
     color: localStorage.getItem('theme--color') ?? '9fffdfe6'
 }
 
+const status = (async () => {
+    const html = await fetch('https://github.com/MinecraftPublisher/yoko').then(e => e.text())
+    let select = (html.match(/<summary class="color-[^"]+">/g) ?? ['<summary class="color-fg-success">'])[0]
+    select = select.substring(16, select.length - 2)
+
+    return select
+})
+
 const helpers = {
     hex_to_rgb: (hex) => {
         let result = /^#?([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})([a-f0-9]{2})?$/i.exec(hex)
