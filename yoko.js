@@ -32,7 +32,7 @@ const applyTheme = (() => {
     }
 
     body {
-    background-color: #${theme.background} !important;
+    background-color: #${theme.background};
     }`
 
     document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]').setAttribute('content', `#${theme.background}`)
@@ -74,8 +74,8 @@ const message = ((text, deletable = true) => {
                 localStorage.setItem('data', encrypt(JSON.stringify(stuff), passcode))
             } else {
                 clicked = true
-                msg.style.backgroundColor = 'rgb(255, 142, 142) !important'
-                msg.style.borderColor = 'rgb(255, 142, 142) !important'
+                msg.style.backgroundColor = 'rgb(255, 142, 142)'
+                msg.style.borderColor = 'rgb(255, 142, 142)'
 
                 setTimeout(() => {
                     clicked = false
