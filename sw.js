@@ -20,7 +20,7 @@ function fetchWithTimeout(resource, timeout) {
 
 sw.addEventListener('activate', async (e) => {
     e.waitUntil(clients.claim())
-    for(let cache of await caches.keys()) await cache.delete(cache)
+    for(let cache of await caches.keys()) await caches.delete(cache)
     const cache = await caches.open('yoko')
 
     console.log('Storing cache...')

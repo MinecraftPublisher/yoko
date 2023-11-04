@@ -7,12 +7,14 @@ if (Notification.permission === 'granted') {
     granted = permission === 'granted' ? true : false
 }
 
-/** @type {ServiceWorkerGlobalScope}  */
-let serviceWorker = await navigator.serviceWorker.getRegistration()
+if (false) {
+    /** @type {ServiceWorkerGlobalScope}  */
+    let serviceWorker = await navigator.serviceWorker.getRegistration()
 
-try {
-    serviceWorker.periodicSync.register()
-    alert('Periodic sync registered')
-} catch (e) {
-    alert('Failed to register periodic sync!')
+    try {
+        serviceWorker.periodicSync.register('yoko-notifications')
+        alert('Periodic sync registered')
+    } catch (e) {
+        alert('Failed to register periodic sync!')
+    }
 }
