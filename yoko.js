@@ -40,7 +40,7 @@ function getRelativeTimeString(date, lang = navigator.language) {
 
 const buildStatus = (async () => {
     let last_build = await fetch('last_build.txt').then(e => e.text()).catch(e => `${(Date.now() / 2) / 1000}`)
-    if(isNaN(parseInt(last_build))) last_build = `${(Date.now() / 2) / 1000}`
+    if (isNaN(parseInt(last_build))) last_build = `${(Date.now() / 2) / 1000}`
 
     if (Date.now() - (parseInt(last_build) * 1000) < 60000) {
         navigator.serviceWorker.getRegistrations().then(function (registrations) {
@@ -218,13 +218,17 @@ const init = (() => {
         keypress.default = (e) => {
             if (e.key === 'Enter') {
                 if (input.value === '.clear') {
-                    input.value = ''
-                    input.setAttribute('disabled', '')
-                    message('Your data has been completely wiped.')
-                    localStorage.clear()
-                    location.reload()
-                    // message('Cannot wipe data while locked. Unlock your data to continue.', false)
-                    // return
+                    if (wipeLocked) {
+                        input.value = ''
+                        input.setAttribute('disabled', '')
+                        message('Your data has been completely wiped.')
+                        localStorage.clear()
+                        location.reload()
+                    } else {
+                        message('Cannot wipe data while locked. Unlock your data to continue.', false)
+                    }
+
+                    return
                 }
 
                 if (input.value === '.refresh') {
@@ -250,6 +254,27 @@ const init = (() => {
                     passcode = decrypt(passcode, input.value)
 
                     const box = document.querySelector('box')
+
+                    window.onblur = (e) => {
+                        setTimeout(() => {
+                            if (!document.hasFocus()) {
+                                stuff = []
+                                password = ''
+                                messages.innerHTML = ''
+                                box.innerHTML = `
+                                <form>
+                                    <input
+                                        type="password" autocapitalize="false"
+                                        autocomplete="false" spellcheck="false"
+                                        class="message"
+                                        placeholder="Enter your passcode..." />
+                                </form>`
+
+                                init()
+                            }
+                        }, 5000)
+                    }
+
                     box.innerHTML = `<input value="" 
                             placeholder="Type a message..." 
                             autocomplete="true" spellcheck="true" 
