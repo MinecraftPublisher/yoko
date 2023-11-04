@@ -25,14 +25,16 @@ sw.addEventListener('fetch', (e) => {
         return
     }
     
-    setTimeout(async () => {
-        const cache = await caches.open('yoko')
-        let match = await cache.match(e.request)
-        e.respondWith(match ?? new Response('Offline'))
-        return
-    }, 1500)
+    const cache = await caches.open('yoko')
+    let match = await cache.match(e.request)
+    if(!match) {
+        match = await fetch(e.request)
+        cache.put(e.request, match)
+    }
     
-    e.respondWith((async () => {
+    e.respondWith(match ?? new Response('Offline'))
+    
+    /* e.respondWith((async () => {
         const cache = await caches.open('yoko')
 		let match = await cache.match(e.request)
 		if(match) return match
@@ -40,5 +42,5 @@ sw.addEventListener('fetch', (e) => {
         cache.put(e.request, await resp.clone())
 
         return await resp.clone()
-    })())
+    })()) */
 })
