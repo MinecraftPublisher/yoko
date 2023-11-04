@@ -93,7 +93,7 @@ const applyTheme = (() => {
 
 applyTheme()
 
-const input = document.querySelector('input.message')
+let input = document.querySelector('input.message')
 const messages = document.querySelector('messages')
 
 const isPWA = (navigator.standalone ?? false) || window.matchMedia('(display-mode: standalone)').matches
@@ -237,9 +237,14 @@ let keypress = {
                     if (input.value !== '' && decrypt(passcode, input.value) === input.value) {
                         message('Please wait while we decrypt your data...', false)
                         passcode = decrypt(passcode, input.value)
-                        input.value = ''
-
-                        input.setAttribute('type', '')
+                        
+                        const box = document.querySelector('box')
+                        box.innerHTML = `<input value="" 
+                            placeholder="Type a message..." 
+                            autocomplete="true" spellcheck="true" 
+                            class="message" />`
+                        
+                        input = document.querySelector('input.message')
 
                         stuff = JSON.parse(decrypt((localStorage.getItem('data') ?? encrypt('[]', passcode)), passcode))
 
