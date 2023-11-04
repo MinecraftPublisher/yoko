@@ -14,7 +14,7 @@ const theme = {
 
 function getRelativeTimeString(date, lang = navigator.language) {
     const timeMs = typeof date === 'number' ? date : date.getTime()
-    const deltaSeconds = Math.round((timeMs - Date.now()) / 1000)
+    const deltaSeconds = Math.floor((timeMs - Date.now()) / 1000)
 
     const cutoffs = [60,
         3600,
