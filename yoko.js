@@ -41,9 +41,18 @@ function getRelativeTimeString(date, lang = navigator.language) {
     return rtf.format(Math.floor(deltaSeconds / divisor), units[unitIndex])
 }
 
+let last_cache
+
 const buildStatus = (async () => {
-    let last_build = await fetch('last_build.txt').then(e => e.text()).catch(e => `${(Date.now() / 2) / 1000}`)
-    if (isNaN(parseInt(last_build))) last_build = `${(Date.now() / 2) / 1000}`
+    if(last_cache) return last_cache
+    let last_build
+
+    try {
+        last_build = await fetch('last_build.txt').then(e => e.text()).catch(e => `${(Date.now() / 2) / 1000}`)
+        if (isNaN(parseInt(last_build))) last_build = `${(Date.now() / 2) / 1000}`
+    } catch (e) {
+        last_build = `${(Date.now() / 2) / 1000}`
+    }
 
     if (Date.now() - (parseInt(last_build) * 1000) < 60000) {
         navigator.serviceWorker.getRegistrations().then(function (registrations) {
@@ -53,8 +62,8 @@ const buildStatus = (async () => {
         })
     }
 
-    if (last_build === 'failed') return 'Unable to fetch'
-    return `Last built ${getRelativeTimeString(parseInt(last_build) * 1000)}`
+    last_cache = `Last built ${getRelativeTimeString(parseInt(last_build) * 1000)}`
+    return last_cache
 })
 
 const helpers = {
@@ -96,6 +105,23 @@ const applyTheme = (() => {
 })
 
 applyTheme()
+
+setInterval(async () => {
+    let yokos = document.querySelectorAll('yoko') ?? []
+    let result = await buildStatus()
+
+    for (let yoko of yokos) {
+        if(yoko.innerHTML.includes('Yoko v')) {
+            yoko.querySelector('div > span').innerHTML = result
+            continue
+        }
+
+        yoko.innerHTML = `<div style="text-align: center;"><img src="webicon.png" width=150 height=150><br>
+            Yoko v${version}<br><br>
+            <span class="build-status" onclick="clearData()">${result}</span>
+        </div>`
+    }
+}, 100)
 
 let input = document.querySelector('input.message')
 const messages = document.querySelector('messages')
@@ -157,12 +183,7 @@ globalThis.clearData = () => {
 }
 
 const logo = (async () => {
-    let result = await buildStatus()
-    message(`<div style="text-align: center;"><img src="webicon.png" width=150 height=150><br>
-        Yoko v${version}<br>
-        <br>
-        <span class="build-status" onclick="clearData()">${result}</span>
-        </div>`, false)
+    message(`<yoko></yoko>`, false)
 })
 
 if (!isPWA) {
