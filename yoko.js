@@ -1,5 +1,3 @@
-import './notification.js'
-
 const version = '1.1 - Build 5'
 
 if ('serviceWorker' in navigator) {
@@ -46,7 +44,7 @@ function getRelativeTimeString(date, lang = navigator.language) {
 let last_cache
 
 const buildStatus = (async () => {
-    if(last_cache) return `Last built ${last_cache}`
+    if (last_cache) return `Last built ${getRelativeTimeString(last_cache)}`
     let last_build
 
     try {
@@ -64,8 +62,8 @@ const buildStatus = (async () => {
         })
     }
 
-    last_cache = getRelativeTimeString(parseInt(last_build) * 1000)
-    return `Last built ${last_cache}`
+    last_cache = parseInt(last_build) * 1000
+    return `Last built ${getRelativeTimeString(last_cache)}`
 })
 
 const helpers = {
@@ -88,15 +86,16 @@ const helpers = {
 }
 
 const applyTheme = (() => {
-    document.querySelector('.theme').innerHTML = `msg {
-    border: 2px solid #${theme.color} !important;
-    background-color: #${theme.color} !important;
+    document.querySelector('.theme').innerHTML = `
+    msg {
+        border: 2px solid #${theme.color} !important;
+        background-color: #${theme.color} !important;
 
-    color: ${helpers.hex_inverse_bw('#' + theme.color)} !important;
+        color: ${helpers.hex_inverse_bw('#' + theme.color)} !important;
     }
 
     body {
-    background-color: #${theme.background};
+        background-color: #${theme.background};
     }`
 
     document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]').setAttribute('content', `#${theme.background}`)
@@ -113,7 +112,7 @@ setInterval(async () => {
     let result = await buildStatus()
 
     for (let yoko of yokos) {
-        if(yoko.innerHTML.includes('Yoko v')) {
+        if (yoko.innerHTML.includes('Yoko v')) {
             yoko.querySelector('div > span').innerHTML = result
             continue
         }
@@ -124,6 +123,10 @@ setInterval(async () => {
         </div>`
     }
 }, 100)
+
+try {
+    await import('./notification.js')
+} catch (e) { }
 
 let input = document.querySelector('input.message')
 const messages = document.querySelector('messages')
