@@ -4,6 +4,9 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
 }
 
+// false for now until cutomization option is added
+const wipeLocked = false
+
 const theme = {
     background: localStorage.getItem('theme--background') ?? '161616',
     color: localStorage.getItem('theme--color') ?? '9fffdfe6'
