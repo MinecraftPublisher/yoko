@@ -19,10 +19,15 @@ function fetchWithTimeout(resource, timeout) {
 }
 
 sw.addEventListener('fetch', (e) => {
+    setTimeout(async () => {
+        const cache = await caches.open('yoko')
+        let match = await cache.match(e.request)
+        e.respondWith()
+    }, 1500)
     e.respondWith((async () => {
         const cache = await caches.open('yoko')
 				let match = await cache.match(e.request)
-             let resp = await fetchWithTimeout(e.request, 1500).catch(() => match ?? new Response('Offline'))
+             let resp = await fetch(e.request).catch(() => match ?? new Response('Offline'))
              cache.put(e.request, await resp.clone())
 
         return await resp.clone()
