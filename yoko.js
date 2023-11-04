@@ -4,6 +4,10 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
 }
 
+window.onerror = (e) => {
+    alert(e)
+}
+
 const theme = {
     background: localStorage.getItem('theme--background') ?? '161616',
     color: localStorage.getItem('theme--color') ?? '9fffdfe6'
