@@ -44,7 +44,7 @@ function getRelativeTimeString(date, lang = navigator.language) {
 let last_cache
 
 const buildStatus = (async () => {
-    if(last_cache) return last_cache
+    if(last_cache) return `Last built ${last_cache}`
     let last_build
 
     try {
@@ -62,8 +62,8 @@ const buildStatus = (async () => {
         })
     }
 
-    last_cache = `Last built ${getRelativeTimeString(parseInt(last_build) * 1000)}`
-    return last_cache
+    last_cache = getRelativeTimeString(parseInt(last_build) * 1000)
+    return `Last built ${last_cache}`
 })
 
 const helpers = {
