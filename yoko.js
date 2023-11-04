@@ -259,6 +259,11 @@ const init = (() => {
                 }
 
                 if (input.value === '.refresh') {
+                    navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                        for (let registration of registrations) {
+                            registration.unregister()
+                        }
+                    })
                     location.reload()
                     return
                 }
@@ -352,6 +357,11 @@ const init = (() => {
                             }
 
                             if (input.value === '.refresh') {
+                                navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                                    for (let registration of registrations) {
+                                        registration.unregister()
+                                    }
+                                })
                                 location.reload()
                                 return
                             }
