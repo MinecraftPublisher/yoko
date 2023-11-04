@@ -19,17 +19,25 @@ function fetchWithTimeout(resource, timeout) {
 }
 
 sw.addEventListener('fetch', (e) => {
+    if(e.request.url.includes('clean')) {
+        await caches.delete('yoko')
+        e.respondWith(new Response('Cleared data'))
+        return
+    }
+    
     setTimeout(async () => {
         const cache = await caches.open('yoko')
         let match = await cache.match(e.request)
         e.respondWith(match ?? new Response('Offline'))
+        return
     }, 1500)
     
     e.respondWith((async () => {
         const cache = await caches.open('yoko')
-				let match = await cache.match(e.request)
-             let resp = await fetch(e.request).catch(() => match ?? new Response('Offline'))
-             cache.put(e.request, await resp.clone())
+		let match = await cache.match(e.request)
+		if(match) return match
+        let resp = await fetch(e.request).catch(() => match ?? new Response('Offline'))
+        cache.put(e.request, await resp.clone())
 
         return await resp.clone()
     })())
