@@ -22,8 +22,9 @@ sw.addEventListener('fetch', (e) => {
     setTimeout(async () => {
         const cache = await caches.open('yoko')
         let match = await cache.match(e.request)
-        e.respondWith()
+        e.respondWith(match ?? new Response('Offline'))
     }, 1500)
+    
     e.respondWith((async () => {
         const cache = await caches.open('yoko')
 				let match = await cache.match(e.request)
