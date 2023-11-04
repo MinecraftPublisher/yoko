@@ -18,11 +18,29 @@ function fetchWithTimeout(resource, timeout) {
   return response
 }
 
-sw.addEventListener('fetch', (e) => {
-    console.log(e.request)  
+sw.addEventListener('activate', async (e) => {
+    const cache = await caches.open('yoko')
+
+    console.log('Storing cache...')
+    await cache.addAll([
+        '/',
+        '/index.html',
+        '/yoko.js',
+        '/styles.css',
+        '/journal.png',
+        '/webicon.png',
+        '/crypto.js'
+    ])
+})
+
+sw.addEventListener('fetch', async (e) => {
     if(e.request.url.includes('clean')) {
+        console.log('Cleaning')
         await caches.delete('yoko')
+        
         e.respondWith(new Response('Cleared data'))
+        e.waitUntil(new Promise((resolve, reject) => { setTimeout(() => { resolve() }, 5000) }))
+
         return
     }
     
@@ -33,7 +51,11 @@ sw.addEventListener('fetch', (e) => {
         cache.put(e.request, match)
     }
     
-    e.respondWith(match ?? new Response('Offline'))
+    try {
+        e.respondWith(match ?? new Response('Offline'))
+    } catch (e) {
+        console.log('Cache fullfilled response')
+    }
     
     /* e.respondWith((async () => {
         const cache = await caches.open('yoko')

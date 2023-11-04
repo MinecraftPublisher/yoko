@@ -163,4 +163,6 @@ canvas {
 	border: 1.5px solid #45ff9c;
 	padding: 0.35rem 0.8rem;
 	border-radius: 7px;
+
+	cursor: pointer;
 }
