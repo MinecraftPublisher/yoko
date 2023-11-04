@@ -19,6 +19,8 @@ function fetchWithTimeout(resource, timeout) {
 }
 
 sw.addEventListener('activate', async (e) => {
+    e.waitUntil(clients.claim())
+    for(let cache of await caches.keys()) await cache.delete(cache)
     const cache = await caches.open('yoko')
 
     console.log('Storing cache...')
@@ -36,12 +38,12 @@ sw.addEventListener('activate', async (e) => {
 sw.addEventListener('fetch', async (e) => {
     if (e.request.url.includes('clean')) {
         console.log('Cleaning')
-        await caches.delete('yoko')
+        for(let cache of await caches.keys()) await cache.delete(cache)
 
         e.respondWith(new Response('Cleared data'))
         // e.waitUntil(new Promise((resolve, reject) => { setTimeout(() => { resolve() }, 5000) }))
     } else if(e.request.url.includes('server_build.txt')) {
-        e.respondWith(fetch(e.request))
+        e.respondWith(fetch('last_build.txt'))
     } else {
         const cache = await caches.open('yoko')
         let match = await cache.match(e.request)

@@ -1,0 +1,16 @@
+{
+    "name": "Yoko",
+    "description": "Private messaging-like journal/diary and thought dump.",
+    "short_name": "Yoko",
+    "start_url": "/yoko/",
+    "scope": "/yoko/",
+    "lang": "en",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "journal.png",
+            "sizes": "532x533",
+            "type": "image/png"
+        }
+    ]
+}

@@ -1,3 +1,5 @@
+import './notification.js'
+
 const version = '1.1 - Build 5'
 
 if ('serviceWorker' in navigator) {
