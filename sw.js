@@ -19,6 +19,7 @@ function fetchWithTimeout(resource, timeout) {
 }
 
 sw.addEventListener('fetch', (e) => {
+    console.log(e.request)  
     if(e.request.url.includes('clean')) {
         await caches.delete('yoko')
         e.respondWith(new Response('Cleared data'))
