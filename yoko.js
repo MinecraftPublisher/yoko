@@ -105,6 +105,9 @@ const isPWA = (navigator.standalone ?? false) || window.matchMedia('(display-mod
 let stuff = []
 let passcode = ''
 
+const encrypt = ((text, code) => CryptoJS.AES.encrypt(text, code))
+const decrypt = ((text, code) => CryptoJS.AES.decrypt(text, code).toString(CryptoJS.enc.Utf8))
+
 const params = new Proxy(new URLSearchParams(window.location.search), {
     get: (searchParams, prop) => searchParams.get(prop),
 })
@@ -125,13 +128,11 @@ const message = ((text, deletable = true) => {
                 localStorage.setItem('data', encrypt(JSON.stringify(stuff), passcode))
             } else {
                 clicked = true
-                msg.style.setProperty('backgroundColor', 'rgb(255, 142, 142)', 'important')
-                msg.style.setProperty('borderColor', 'rgb(255, 142, 142)', 'important')
+                msg.setAttribute('style', 'background-color: rgb(255, 142, 142) !important; border: 2px solid rgb(255, 142, 142) !important;')
 
                 setTimeout(() => {
                     clicked = false
-                    msg.style.backgroundColor = ''
-                    msg.style.borderColor = ''
+                    msg.setAttribute('style', '')
                 }, 1000)
             }
         }
@@ -172,9 +173,6 @@ if (!isPWA) {
     message('This pwa is not supported on desktop devices.', false)
     throw 'ERR_NOT_SUPPORTED'
 }
-
-const encrypt = ((text, code) => CryptoJS.AES.encrypt(text, code))
-const decrypt = ((text, code) => CryptoJS.AES.decrypt(text, code).toString(CryptoJS.enc.Utf8))
 
 window.onerror = (e) => { }
 
