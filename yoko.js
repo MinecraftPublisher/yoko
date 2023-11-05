@@ -363,7 +363,7 @@ const init = (() => {
                         }
 
                         lastEnter = false
-                        input.value = input.value.substring(0, input.value.length - 1)
+                        input.value = input.value.replace(/\n$/g, '')
 
                         if (input.value === '.clear') {
                             localStorage.clear()
