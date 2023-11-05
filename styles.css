@@ -26,7 +26,6 @@ input.message {
 	position: fixed;
 	display: block;
 
-	width: 100vw !important;
 	font-size: 1.2rem;
 
 	background-color: inherit;
@@ -38,7 +37,10 @@ input.message {
 	padding-bottom: calc(var(--sab) + 1.8rem);
 
 	bottom: 0;
-	left: 0;
+	left: 2.5vw;
+	right: 2.5vw;
+
+	width: calc(100vw - attr(padding-left) - attr(padding-right) - attr(left) - attr(right)) !important;
 
 	outline: none;
 	border: none;
