@@ -191,20 +191,21 @@ const logo = (async () => {
     message(`<yoko></yoko>`, false)
 })
 
-if (!isPWA) {
+/* if (!isPWA) {
     input.style.display = 'none'
     document.querySelector('hr').style.display = 'none'
     await logo()
     message('Please add this website to your home screen to use it.', false)
     message('This pwa is not supported on desktop devices.', false)
     throw 'ERR_NOT_SUPPORTED'
-}
+} */
 
 window.onerror = (e) => { }
 
 let keypress = {
     default: () => { }
 }
+
 input.onkeypress = (e) => {
     keypress.default(e)
 }
@@ -313,6 +314,9 @@ const init = (() => {
                             class="message" />`
 
                     input = document.querySelector('input.message')
+                    input.onkeypress = (e) => {
+                        keypress.default(e)
+                    }
 
                     stuff = JSON.parse(decrypt((localStorage.getItem('data') ?? encrypt('[]', passcode)), passcode))
 
