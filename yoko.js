@@ -349,119 +349,129 @@ const init = (() => {
                             250 / remaining.length)
                     }
 
+                    let lastEnter = false
                     keypress.default = (j) => {
-                        if (j.key === 'Enter') {
-                            if (input.value === '.clear') {
-                                localStorage.clear()
-                                messages.innerHTML = ''
-                                message('Your data has been completely wiped.')
-                                input.value = ''
-                                input.setAttribute('disabled', '')
-                                return
-                            }
-
-                            if (input.value === '.refresh') {
-                                navigator.serviceWorker.getRegistrations().then(function (registrations) {
-                                    for (let registration of registrations) {
-                                        registration.unregister()
-                                    }
-                                })
-                                location.reload()
-                                return
-                            }
-
-                            if (input.value === '.share') {
-                                messages.innerHTML = ''
-                                message('Your messages have been hidden for privacy.', false)
-                                message('Click anywhere to reload.', false)
-
-                                let qr = new QRious({
-                                    element: document.querySelector('canvas'),
-                                    value: 'https://minecraftpublisher.github.io/yoko/?data=' + btoa(localStorage.getItem('data')) + '&passcode=' + btoa(localStorage.getItem('passcode')),
-                                    level: 'L',
-                                    size: 500
-                                })
-                                document.querySelector('qr').style.display = 'block'
-
-                                document.onclick = (e) => location.reload()
-
-                                return
-                            }
-
-                            if (input.value === '.change') {
-                                messages.innerHTML = ''
-                                message('Your messages have been hidden for privacy.', false)
-
-                                message('Enter your new password.', false)
-
-                                input.value = ''
-                                input.setAttribute('type', 'password')
-                                input.placeholder = 'Enter new password...'
-
-                                keypress.default = (k) => {
-                                    if (k.key === 'Enter') {
-                                        let newpassword = input.value
-                                        input.value = ''
-                                        let encrypted = encrypt(newpassword, newpassword)
-                                        let recrypted_data = encrypt(JSON.stringify(stuff), newpassword)
-
-                                        localStorage.setItem('passcode', encrypted)
-                                        localStorage.setItem('data', recrypted_data)
-                                        location.reload()
-                                    }
-                                }
-
-                                return
-                            }
-
-                            if (input.value.startsWith('.theme')) {
-                                let _color = input.value.substring('.theme '.length)
-                                if (_color === '') {
-                                    message('`.theme [background color] [foreground/message color]`<br>Current theme:<br>Background color: #' + theme.background + '<br>Message color: #' + theme.color + '<br><br>This message is not saved to your database.')
-                                    return
-                                }
-
-                                let colors = _color.split(' ')
-                                if (colors.length !== 2) {
-                                    message('Invalid syntax.<br>`.theme [background color] [foreground/message color]`')
-                                }
-
-                                let background = colors[0]
-                                if (background.startsWith('#')) background = background.substring(1)
-
-                                let color = colors[1]
-                                if (color.startsWith('#')) color = color.substring(1)
-
-                                if (background.length > 8 || background.length < 2) {
-                                    message('Invalid hex background color. Should optionally start with a # and be withing range of [2, 8] encoded in hex format.')
-                                }
-
-                                if (color.length > 8 || color.length < 2) {
-                                    message('Invalid hex foreground/message color. Should optionally start with a # and be withing range of [2, 8] encoded in hex format.')
-                                }
-
-                                theme.background = background
-                                theme.color = color
-
-                                input.value = ''
-                                applyTheme()
-                                return
-                            }
-
-                            if (input.value === '') return
-
-                            let current = new Date()
-                            let text = input.value + '\n<date>' + current.toLocaleString('en-us', {
-                                month: 'short', year: 'numeric', day: 'numeric'
-                            }) + ' at ' + current.toLocaleTimeString('en-gb', {
-                                hour: '2-digit', minute: '2-digit'
-                            }) + '</date>'
-                            input.value = ''
-
-                            message(text)
-                            stuff.push(text)
-                            localStorage.setItem('data', encrypt(JSON.stringify(stuff), passcode))
+                        if (j.key !== 'Enter') {
+                            lastEnter = false
                         }
+                        
+                        if (!lastEnter) {
+                            lastEnter = true
+                            return
+                        }
+
+                        lastEnter = false
+
+                        if (input.value === '.clear') {
+                            localStorage.clear()
+                            messages.innerHTML = ''
+                            message('Your data has been completely wiped.')
+                            input.value = ''
+                            input.setAttribute('disabled', '')
+                            return
+                        }
+
+                        if (input.value === '.refresh') {
+                            navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                                for (let registration of registrations) {
+                                    registration.unregister()
+                                }
+                            })
+                            location.reload()
+                            return
+                        }
+
+                        if (input.value === '.share') {
+                            messages.innerHTML = ''
+                            message('Your messages have been hidden for privacy.', false)
+                            message('Click anywhere to reload.', false)
+
+                            let qr = new QRious({
+                                element: document.querySelector('canvas'),
+                                value: 'https://minecraftpublisher.github.io/yoko/?data=' + btoa(localStorage.getItem('data')) + '&passcode=' + btoa(localStorage.getItem('passcode')),
+                                level: 'L',
+                                size: 500
+                            })
+                            document.querySelector('qr').style.display = 'block'
+
+                            document.onclick = (e) => location.reload()
+
+                            return
+                        }
+
+                        if (input.value === '.change') {
+                            messages.innerHTML = ''
+                            message('Your messages have been hidden for privacy.', false)
+
+                            message('Enter your new password.', false)
+
+                            input.value = ''
+                            input.setAttribute('type', 'password')
+                            input.placeholder = 'Enter new password...'
+
+                            keypress.default = (k) => {
+                                if (k.key === 'Enter') {
+                                    let newpassword = input.value
+                                    input.value = ''
+                                    let encrypted = encrypt(newpassword, newpassword)
+                                    let recrypted_data = encrypt(JSON.stringify(stuff), newpassword)
+
+                                    localStorage.setItem('passcode', encrypted)
+                                    localStorage.setItem('data', recrypted_data)
+                                    location.reload()
+                                }
+                            }
+
+                            return
+                        }
+
+                        if (input.value.startsWith('.theme')) {
+                            let _color = input.value.substring('.theme '.length)
+                            if (_color === '') {
+                                message('`.theme [background color] [foreground/message color]`<br>Current theme:<br>Background color: #' + theme.background + '<br>Message color: #' + theme.color + '<br><br>This message is not saved to your database.')
+                                return
+                            }
+
+                            let colors = _color.split(' ')
+                            if (colors.length !== 2) {
+                                message('Invalid syntax.<br>`.theme [background color] [foreground/message color]`')
+                            }
+
+                            let background = colors[0]
+                            if (background.startsWith('#')) background = background.substring(1)
+
+                            let color = colors[1]
+                            if (color.startsWith('#')) color = color.substring(1)
+
+                            if (background.length > 8 || background.length < 2) {
+                                message('Invalid hex background color. Should optionally start with a # and be withing range of [2, 8] encoded in hex format.')
+                            }
+
+                            if (color.length > 8 || color.length < 2) {
+                                message('Invalid hex foreground/message color. Should optionally start with a # and be withing range of [2, 8] encoded in hex format.')
+                            }
+
+                            theme.background = background
+                            theme.color = color
+
+                            input.value = ''
+                            applyTheme()
+                            return
+                        }
+
+                        if (input.value === '') return
+
+                        let current = new Date()
+                        let text = input.value + '\n<date>' + current.toLocaleString('en-us', {
+                            month: 'short', year: 'numeric', day: 'numeric'
+                        }) + ' at ' + current.toLocaleTimeString('en-gb', {
+                            hour: '2-digit', minute: '2-digit'
+                        }) + '</date>'
+                        input.value = ''
+
+                        message(text)
+                        stuff.push(text)
+                        localStorage.setItem('data', encrypt(JSON.stringify(stuff), passcode))
                     }
                 } else {
                     input.value = ''
