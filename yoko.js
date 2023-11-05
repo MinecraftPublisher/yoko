@@ -145,7 +145,7 @@ const params = new Proxy(new URLSearchParams(window.location.search), {
 
 const message = ((text, deletable = true) => {
     const msg = document.createElement('msg')
-    msg.innerHTML = text
+    msg.innerHTML = text.replace(/^\n/g, '').replaceAll('\n', '<br>')
 
     let clicked = false
 
@@ -308,13 +308,14 @@ const init = (() => {
                         }, 5000)
                     }
 
-                    box.innerHTML = `<input value="" 
+                    box.innerHTML = `<textarea value="" 
                             placeholder="Type a message..." 
                             autocomplete="true" spellcheck="true" 
                             class="message" />`
 
-                    input = document.querySelector('input.message')
+                    input = box.querySelector('textarea.message')
                     input.onkeypress = (e) => {
+			// input.value = input.innerText
                         keypress.default(e)
                     }
 
@@ -353,14 +354,16 @@ const init = (() => {
                     keypress.default = (j) => {
                         if (j.key !== 'Enter') {
                             lastEnter = false
+                            return true
                         }
                         
                         if (!lastEnter) {
                             lastEnter = true
-                            return
+                            return true
                         }
 
                         lastEnter = false
+                        input.value = input.value.substring(0, input.value.length - 1)
 
                         if (input.value === '.clear') {
                             localStorage.clear()

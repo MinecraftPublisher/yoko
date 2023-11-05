@@ -22,7 +22,7 @@ body {
 	font-family: Arial, Helvetica, sans-serif;
 }
 
-input.message {
+input.message, div[contenteditable], textarea.message {
 	position: fixed;
 	display: block;
 
@@ -48,7 +48,7 @@ input.message {
 	z-index: 3;
 }
 
-input.message:focus ~ hr {
+input.message:focus ~ hr, div[contenteditable]:focus ~ hr, textarea.message:focus ~ hr {
 	box-shadow: 0px 0px 200px 150px rgba(58, 58, 58, 0.9);
 }
 
