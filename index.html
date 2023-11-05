@@ -22,7 +22,7 @@
 
     <link rel="shortcut icon" href="webicon.png" />
 
-    <script src="crypto.js" defer></script>
+    <script src="js/crypto.js" defer></script>
 </head>
 
 <body>
@@ -30,14 +30,18 @@
         <canvas></canvas>
     </qr>
     <messages> </messages>
+    <boxoverlay></boxoverlay>
+    <hr><hr><hr>
     <box>
-        <input type="password" autocapitalize="false" autocomplete="false" spellcheck="false" class="message"
+        <form onsubmit="return false">
+            <input type="password" autocapitalize="false" autocomplete="false" spellcheck="false" class="message"
             placeholder="Enter your passcode..." />
+        </form>
     </box>
     <hr />
 
     <style class="theme"></style>
-    <script src="yoko.js" defer type="module"></script>
+    <script src="js/yoko.js" defer type="module"></script>
 </body>
 
 </html>

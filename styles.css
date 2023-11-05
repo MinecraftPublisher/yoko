@@ -22,19 +22,20 @@ body {
 	font-family: Arial, Helvetica, sans-serif;
 }
 
-input.message, div[contenteditable], textarea.message {
+input.message,
+textarea.message {
 	position: fixed;
 	display: block;
 
 	font-size: 1.2rem;
 
-	background-color: inherit;
-	color: inherit;
+	background-color: transparent;
+	color: var(--foreground);
 
 	margin: 0;
 	padding: 1rem;
 	padding-top: 1rem;
-	padding-bottom: calc(var(--sab) + 1.8rem);
+	margin-bottom: calc(var(--sab) + 0.9rem);
 
 	bottom: 0;
 	left: 2.5vw;
@@ -45,28 +46,48 @@ input.message, div[contenteditable], textarea.message {
 	outline: none;
 	border: none;
 
-	z-index: 3;
+	z-index: 4;
 }
 
-input.message:focus ~ hr, div[contenteditable]:focus ~ hr, textarea.message:focus ~ hr {
-	box-shadow: 0px 0px 200px 150px rgba(58, 58, 58, 0.9);
+input.message:focus~hr,
+textarea.message:focus~hr {
+	box-shadow: 0px 0px 250px 200px rgba(15, 15, 15, 0.9);
+}
+
+textarea.message {
+	margin-bottom: calc(var(--sab) + 0.9rem);
+	font-family: Arial, Arial, Helvetica, sans-serif;
+	height: 0.76rem !important;
+	max-height: 1rem !important;
+	resize: none;
 }
 
 hr {
 	position: fixed;
 
-	z-index: 2;
+	z-index: 3;
 
 	top: calc(100vh - 2rem);
 	left: 0;
 
 	border: none;
 
-	box-shadow: 0px 0px 80px 50px rgba(58, 58, 58, 0.9);
+	box-shadow: 0px 0px 90px 60px rgba(15, 15, 15, 0.95);
 
 	transition: box-shadow 0.5s;
 
 	width: 100vw;
+}
+
+boxoverlay {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	display: block;
+	background-color: var(--background);
+	width: 100vw;
+	min-height: 4rem;
+	z-index: 2;
 }
 
 messages {
@@ -74,21 +95,37 @@ messages {
 
 	top: 0;
 	left: 0;
+	bottom: 8rem;
 
-	height: calc(100vh - 6rem);
+	height: 86% !important;
 	width: 100vw;
 
 	padding-top: 5rem;
 
 	color: rgb(32, 32, 32);
 
-	z-index: 3;
+	z-index: 1;
 
 	padding: 1rem;
 
-	overflow: scroll;
+	overflow:auto;
 
-	padding-bottom: 10rem;
+	padding-bottom: 16rem;
+}
+
+code > textarea {
+	margin-top: 0.5rem;
+	border: 1px solid #fff;
+	padding: 5px;
+	background-color: #222;
+	border-radius: 5px;
+	word-break: break-all;
+	width: 30rem !important;
+	max-width: 30rem !important;
+	height: 5rem;
+	color: #fff;
+	resize: none;
+	outline: none;
 }
 
 @keyframes appear {
@@ -125,7 +162,7 @@ msg {
 	animation: appear 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-msg > date {
+msg>date {
 	position: absolute;
 	bottom: 6px;
 	right: 10px;
@@ -167,4 +204,21 @@ canvas {
 	border-radius: 7px;
 
 	cursor: pointer;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+	transition: background-color 600000s 0s, color 600000s 0s;
+}
+
+input[data-autocompleted] {
+	background-color: transparent !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-transition: "color 9999s ease-out, background-color 9999s ease-out";
+    -webkit-transition-delay: 9999s;
 }

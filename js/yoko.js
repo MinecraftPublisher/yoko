@@ -1,8 +1,27 @@
-const version = '1.1 - Build 7'
+const version = '1.2 - Build 0'
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
 }
+
+const loadState = (async (state) => {
+    let data = await fetch('js/states/' + state + '.js').then(e => e.text())
+    const args = [
+        'message',
+        'decrypt',
+        'encrypt',
+        'passcode',
+        'input',
+        'clear',
+        'theme',
+        'messages',
+        'init',
+        'logo',
+        'version',
+        'applyTheme'
+    ]
+    return new Function(...args, data)
+})
 
 // false for now until cutomization option is added
 const wipeLocked = false
@@ -87,11 +106,16 @@ const helpers = {
 
 const applyTheme = (() => {
     document.querySelector('.theme').innerHTML = `
+    :root {
+        --foreground: #${helpers.hex_inverse_bw('#' + theme.color)};
+        --background: #${theme.background.substring(6)};
+    }
+
     msg {
         border: 2px solid #${theme.color} !important;
         background-color: #${theme.color} !important;
 
-        color: ${helpers.hex_inverse_bw('#' + theme.color)} !important;
+        color: #${helpers.hex_inverse_bw('#' + theme.color)} !important;
     }
 
     body {
@@ -143,9 +167,25 @@ const params = new Proxy(new URLSearchParams(window.location.search), {
     get: (searchParams, prop) => searchParams.get(prop),
 })
 
+globalThis.messageCodeClick = (id) => {
+    let element = document.getElementById(`doc-${id}`)
+    if(element) navigator.clipboard.writeText(element.innerHTML)
+
+    return false
+}
+
+let lastMessage
 const message = ((text, deletable = true) => {
+    if(lastMessage === text) return
+    lastMessage = text
     const msg = document.createElement('msg')
+    
     msg.innerHTML = text.replace(/^\n/g, '').replaceAll('\n', '<br>')
+        .replace(/```[^`]+```/g, (g) => {
+            let txt = g.substring(3, g.length - 3)
+            let id = (Math.floor(Math.random() * 899999999) + 100000000).toString()
+            return `<code><textarea readonly id="doc-${id}" onclick="return globalThis.messageCodeClick('${id}')">${txt}</textarea></code>`
+        })
 
     let clicked = false
 
@@ -169,8 +209,15 @@ const message = ((text, deletable = true) => {
         }
     }
 
-    messages.scrollTop = messages.scrollHeight
+    messages.scrollTo({
+        top: messages.scrollHeight + 1000,
+        behavior: 'smooth'
+    })
     messages.appendChild(msg)
+    messages.scrollTo({
+        top: messages.scrollHeight + 1000,
+        behavior: 'smooth'
+    })
 })
 
 const clear = ((text) => {
@@ -206,6 +253,8 @@ let keypress = {
     default: () => { }
 }
 
+globalThis.keypress = keypress
+
 input.onkeypress = (e) => {
     keypress.default(e)
 }
@@ -231,7 +280,16 @@ const init = (() => {
     if (passcode === 'null') {
         message('Please choose a passcode to encrypt your data with and type it down below, Then press enter.', false)
 
+        let interval = setInterval(() => {
+            let element = document.querySelector('input:is(:-webkit-autofill)')
+            if(element) {
+                // element.onfocus = (k) => setTimeout(() => keypress.default({ key: 'Enter' }), 300)
+            }
+        }, 500)
+
         keypress.default = (e) => {
+            clearInterval(interval)
+
             if (e.key === 'Enter') {
                 passcode = encrypt(input.value, input.value)
                 localStorage.setItem('passcode', passcode)
@@ -243,7 +301,16 @@ const init = (() => {
     } else {
         message('Please enter your passcode below to unlock your data.', false)
 
+        let interval = setInterval(() => {
+            let element = document.querySelector('input:is(:-webkit-autofill)')
+            if(element) {
+                // element.onfocus = (k) => setTimeout(() => keypress.default({ key: 'Enter' }), 300)
+            }
+        }, 500)
+
         keypress.default = (e) => {
+            clearInterval(interval)
+
             if (e.key === 'Enter') {
                 if (input.value === '.clear') {
                     if (wipeLocked) {
@@ -283,199 +350,10 @@ const init = (() => {
                 }
 
                 if (input.value !== '' && decrypt(passcode, input.value) === input.value) {
-                    message('Please wait while we decrypt your data...', false)
-                    passcode = decrypt(passcode, input.value)
-
-                    const box = document.querySelector('box')
-
-                    window.onblur = (e) => {
-                        setTimeout(() => {
-                            if (!document.hasFocus()) {
-                                stuff = []
-                                password = ''
-                                messages.innerHTML = ''
-                                box.innerHTML = `
-                                <form>
-                                    <input
-                                        type="password" autocapitalize="false"
-                                        autocomplete="false" spellcheck="false"
-                                        class="message"
-                                        placeholder="Enter your passcode..." />
-                                </form>`
-
-                                init()
-                            }
-                        }, 5000)
-                    }
-
-                    box.innerHTML = `<textarea value="" 
-                            placeholder="Type a message..." 
-                            autocomplete="true" spellcheck="true" 
-                            class="message" />`
-
-                    input = box.querySelector('textarea.message')
-                    input.onkeypress = (e) => {
-			// input.value = input.innerText
-                        keypress.default(e)
-                    }
-
-                    stuff = JSON.parse(decrypt((localStorage.getItem('data') ?? encrypt('[]', passcode)), passcode))
-
-                    input.setAttribute('placeholder', 'Type a message...')
-
-                    clear()
-                    if (stuff.length === 0) {
-                        message('There are no messages here, Send one to get started. Double click a message, and it will be deleted.')
-                        message('Use ".clear" as your input anywhere in the app to wipe your data.')
-                        message('If you want to move your data to another device, Use ".share" as your input while unlocked to display a QR code that can be scanned to move your data.')
-                        message('Remember, The relocated data will still be encrypted with the passcode used on the previous device.')
-                    } else {
-                        let remaining = stuff
-                        let q = -1
-
-                        const run = (() => {
-                            if (remaining[0]) {
-                                message(remaining[0])
-                                remaining = remaining.slice(1)
-
-                                messages.scrollTo({
-                                    top: messages.scrollHeight,
-                                    behavior: 'smooth'
-                                })
-                            } else clearInterval(q)
-                        })
-
-                        run()
-                        q = setInterval(run,
-                            250 / remaining.length)
-                    }
-
-                    let lastEnter = false
-                    keypress.default = (j) => {
-                        if (j.key !== 'Enter') {
-                            lastEnter = false
-                            return true
-                        }
-                        
-                        if (!lastEnter) {
-                            lastEnter = true
-                            return true
-                        }
-
-                        lastEnter = false
-                        input.value = input.value.replace(/\n$/g, '')
-
-                        if (input.value === '.clear') {
-                            localStorage.clear()
-                            messages.innerHTML = ''
-                            message('Your data has been completely wiped.')
-                            input.value = ''
-                            input.setAttribute('disabled', '')
-                            return
-                        }
-
-                        if (input.value === '.refresh') {
-                            navigator.serviceWorker.getRegistrations().then(function (registrations) {
-                                for (let registration of registrations) {
-                                    registration.unregister()
-                                }
-                            })
-                            location.reload()
-                            return
-                        }
-
-                        if (input.value === '.share') {
-                            messages.innerHTML = ''
-                            message('Your messages have been hidden for privacy.', false)
-                            message('Click anywhere to reload.', false)
-
-                            let qr = new QRious({
-                                element: document.querySelector('canvas'),
-                                value: 'https://minecraftpublisher.github.io/yoko/?data=' + btoa(localStorage.getItem('data')) + '&passcode=' + btoa(localStorage.getItem('passcode')),
-                                level: 'L',
-                                size: 500
-                            })
-                            document.querySelector('qr').style.display = 'block'
-
-                            document.onclick = (e) => location.reload()
-
-                            return
-                        }
-
-                        if (input.value === '.change') {
-                            messages.innerHTML = ''
-                            message('Your messages have been hidden for privacy.', false)
-
-                            message('Enter your new password.', false)
-
-                            input.value = ''
-                            input.setAttribute('type', 'password')
-                            input.placeholder = 'Enter new password...'
-
-                            keypress.default = (k) => {
-                                if (k.key === 'Enter') {
-                                    let newpassword = input.value
-                                    input.value = ''
-                                    let encrypted = encrypt(newpassword, newpassword)
-                                    let recrypted_data = encrypt(JSON.stringify(stuff), newpassword)
-
-                                    localStorage.setItem('passcode', encrypted)
-                                    localStorage.setItem('data', recrypted_data)
-                                    location.reload()
-                                }
-                            }
-
-                            return
-                        }
-
-                        if (input.value.startsWith('.theme')) {
-                            let _color = input.value.substring('.theme '.length)
-                            if (_color === '') {
-                                message('`.theme [background color] [foreground/message color]`<br>Current theme:<br>Background color: #' + theme.background + '<br>Message color: #' + theme.color + '<br><br>This message is not saved to your database.')
-                                return
-                            }
-
-                            let colors = _color.split(' ')
-                            if (colors.length !== 2) {
-                                message('Invalid syntax.<br>`.theme [background color] [foreground/message color]`')
-                            }
-
-                            let background = colors[0]
-                            if (background.startsWith('#')) background = background.substring(1)
-
-                            let color = colors[1]
-                            if (color.startsWith('#')) color = color.substring(1)
-
-                            if (background.length > 8 || background.length < 2) {
-                                message('Invalid hex background color. Should optionally start with a # and be withing range of [2, 8] encoded in hex format.')
-                            }
-
-                            if (color.length > 8 || color.length < 2) {
-                                message('Invalid hex foreground/message color. Should optionally start with a # and be withing range of [2, 8] encoded in hex format.')
-                            }
-
-                            theme.background = background
-                            theme.color = color
-
-                            input.value = ''
-                            applyTheme()
-                            return
-                        }
-
-                        if (input.value === '') return
-
-                        let current = new Date()
-                        let text = input.value + '\n<date>' + current.toLocaleString('en-us', {
-                            month: 'short', year: 'numeric', day: 'numeric'
-                        }) + ' at ' + current.toLocaleTimeString('en-gb', {
-                            hour: '2-digit', minute: '2-digit'
-                        }) + '</date>'
-                        input.value = ''
-
-                        message(text)
-                        stuff.push(text)
-                        localStorage.setItem('data', encrypt(JSON.stringify(stuff), passcode))
-                    }
+                    loadState('journal').then(e => {
+                        console.log(e)
+                        e(message, decrypt, encrypt, passcode, input, clear, theme, messages, init, logo, version, applyTheme)
+                    })
                 } else {
                     input.value = ''
                     message('Incorrect passcode! Please try again.', false)
