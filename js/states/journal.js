@@ -1,12 +1,17 @@
 message('Please wait while we decrypt your data...', false)
-passcode = decrypt(passcode, input.value)
+if (!tryJSON(value2)) {
+    message('Invalid or corrupted passcode or data.', false)
+    return
+}
+
+passcode = decrypt(passcode, value2)
 
 const box = document.querySelector('box')
 
 window.onblur = (e) => {
     setTimeout(async () => {
         if (!document.hasFocus()) {
-            window.onblur = () => {}
+            window.onblur = () => { }
             stuff = []
             passcode = ''
             messages.innerHTML = ''
@@ -184,7 +189,7 @@ keypress.default = (j) => {
         return
     }
 
-    if(input.value === '.export') {
+    if (input.value === '.export') {
         let localData = new Array(localStorage.length).fill().map((e, i) => [localStorage.key(i), localStorage.getItem(localStorage.key(i))])
         let encoded = btoa(encodeURI(JSON.stringify(localData)))
         let output = `[yoko:${version}](${encoded})`
@@ -196,21 +201,21 @@ keypress.default = (j) => {
         return
     }
 
-    if(input.value === '.import') {
+    if (input.value === '.import') {
         input.value = ''
         setTimeout(() => { input.value = '' }, 100)
 
         let _prompt = prompt('Please paste your import data below:')
         let syntax = _prompt.match(/^\[yoko:[^\]]+\]\(/)
-        if(!syntax) message('Invalid syntax.', false)
+        if (!syntax) message('Invalid syntax.', false)
 
         let data = _prompt.split('](').slice(1).join('](')
         data = data.substring(0, data.length - 1)
-        
+
         let decoded = JSON.parse(decodeURI(atob(data)))
 
         localStorage.clear()
-        for(let entry of decoded) {
+        for (let entry of decoded) {
             let key = entry[0]
             let value = entry[1]
 

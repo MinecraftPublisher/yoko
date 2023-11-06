@@ -18,7 +18,9 @@ const loadState = (async (state) => {
         'init',
         'logo',
         'version',
-        'applyTheme'
+        'applyTheme',
+        'value2',
+        'tryJSON'
     ]
     return new Function(...args, data)
 })
@@ -169,17 +171,17 @@ const params = new Proxy(new URLSearchParams(window.location.search), {
 
 globalThis.messageCodeClick = (id) => {
     let element = document.getElementById(`doc-${id}`)
-    if(element) navigator.clipboard.writeText(element.innerHTML)
+    if (element) navigator.clipboard.writeText(element.innerHTML)
 
     return false
 }
 
 let lastMessage
 const message = ((text, deletable = true) => {
-    if(lastMessage === text) return
+    if (lastMessage === text) return
     lastMessage = text
     const msg = document.createElement('msg')
-    
+
     msg.innerHTML = text.replace(/^\n/g, '').replaceAll('\n', '<br>')
         .replace(/```[^`]+```/g, (g) => {
             let txt = g.substring(3, g.length - 3)
@@ -280,12 +282,12 @@ const init = (() => {
     if (passcode === 'null') {
         message('Please choose a passcode to encrypt your data with and type it down below, Then press enter.', false)
 
-        let interval = setInterval(() => {
-            let element = document.querySelector('input:is(:-webkit-autofill)')
-            if(element) {
-                // element.onfocus = (k) => setTimeout(() => keypress.default({ key: 'Enter' }), 300)
-            }
-        }, 500)
+        // let interval = setInterval(() => {
+        //     let element = document.querySelector('input:is(:-webkit-autofill)')
+        //     if (element) {
+        //         element.onfocus = (k) => setTimeout(() => keypress.default({ key: 'Enter' }), 300)
+        //     }
+        // }, 500)
 
         keypress.default = (e) => {
             clearInterval(interval)
@@ -301,15 +303,42 @@ const init = (() => {
     } else {
         message('Please enter your passcode below to unlock your data.', false)
 
-        let interval = setInterval(() => {
-            let element = document.querySelector('input:is(:-webkit-autofill)')
-            if(element) {
-                // element.onfocus = (k) => setTimeout(() => keypress.default({ key: 'Enter' }), 300)
+        // let interval = setInterval(() => {
+        //     let element = document.querySelector('input:is(:-webkit-autofill)')
+        //     if (element) {
+        //         element.onfocus = (k) => setTimeout(() => keypress.default({ key: 'Enter' }), 300)
+        //     }
+        // }, 500)
+
+        const tryJSON = (passcode) => {
+            try {
+                JSON.parse(decrypt((localStorage.getItem('data') ?? encrypt('[]', passcode)), passcode))
+                return true
+            } catch (e) {
+                return false
             }
-        }, 500)
+        }
+
+        input.onblur = (e) => {
+            let value2 = input.value + e.key
+            if (value2 !== '' && decrypt(passcode, value2) === value2 && tryJSON(value2)) {
+                loadState('journal').then(e => {
+                    // console.log(e)
+                    e(message, decrypt, encrypt, passcode, input, clear, theme, messages, init, logo, version, applyTheme, value2, tryJSON)
+                })
+            }
+        }
 
         keypress.default = (e) => {
-            clearInterval(interval)
+            // clearInterval(interval)
+
+            let value2 = input.value + e.key
+            if (value2 !== '' && decrypt(passcode, value2) === value2 && tryJSON(value2)) {
+                loadState('journal').then(e => {
+                    // console.log(e)
+                    e(message, decrypt, encrypt, passcode, input, clear, theme, messages, init, logo, version, applyTheme, value2, tryJSON)
+                })
+            }
 
             if (e.key === 'Enter') {
                 if (input.value === '.clear') {
@@ -351,8 +380,8 @@ const init = (() => {
 
                 if (input.value !== '' && decrypt(passcode, input.value) === input.value) {
                     loadState('journal').then(e => {
-                        console.log(e)
-                        e(message, decrypt, encrypt, passcode, input, clear, theme, messages, init, logo, version, applyTheme)
+                        // console.log(e)
+                        e(message, decrypt, encrypt, passcode, input, clear, theme, messages, init, logo, version, applyTheme, value2, tryJSON)
                     })
                 } else {
                     input.value = ''
