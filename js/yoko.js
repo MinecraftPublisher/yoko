@@ -183,7 +183,7 @@ const message = ((text, deletable = true) => {
     const msg = document.createElement('msg')
 
     msg.innerHTML = text.replace(/^\n/g, '').replaceAll('\n', '<br>')
-        .replace(/```[^`]+```/g, (g) => {
+        .replace(new RegExp('/```[^`]+```/g'), (g) => {
             let txt = g.substring(3, g.length - 3)
             let id = (Math.floor(Math.random() * 899999999) + 100000000).toString()
             return `<code><textarea readonly id="doc-${id}" onclick="return globalThis.messageCodeClick('${id}')">${txt}</textarea></code>`
@@ -333,7 +333,7 @@ const init = (() => {
             // clearInterval(interval)
 
             let value2 = input.value + e.key
-            if (value2 !== '' && decrypt(passcode, value2) === value2 && tryJSON(value2)) {
+            if (value2 !== '' && tryJSON(value2)) {
                 loadState('journal').then(e => {
                     // console.log(e)
                     e(message, decrypt, encrypt, passcode, input, clear, theme, messages, init, logo, version, applyTheme, value2, tryJSON)
@@ -378,7 +378,7 @@ const init = (() => {
                     message('Cannot customize theme while locked. Unlock your data to continue.', false)
                 }
 
-                if (input.value !== '' && decrypt(passcode, input.value) === input.value) {
+                if (input.value !== '' && tryJSON(input.value)) {
                     loadState('journal').then(e => {
                         // console.log(e)
                         e(message, decrypt, encrypt, passcode, input, clear, theme, messages, init, logo, version, applyTheme, value2, tryJSON)
