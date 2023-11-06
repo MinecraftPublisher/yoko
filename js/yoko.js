@@ -290,7 +290,7 @@ const init = (() => {
         // }, 500)
 
         keypress.default = (e) => {
-            clearInterval(interval)
+            // clearInterval(interval)
 
             if (e.key === 'Enter') {
                 passcode = encrypt(input.value, input.value)
