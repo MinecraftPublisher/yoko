@@ -1,7 +1,7 @@
 const version = '1.2 - Build 1'
 
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
+    navigator.serviceWorker.register('js/sw.js')
 }
 
 const loadState = (async (state) => {
