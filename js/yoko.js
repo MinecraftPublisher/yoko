@@ -1,7 +1,7 @@
 const version = '1.2 - Build 1'
 
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('js/sw.js')
+    navigator.serviceWorker.register('sw.js')
 }
 
 const loadState = (async (state) => {
@@ -195,10 +195,14 @@ const message = ((text, deletable = true) => {
         msg.onclick = (e) => {
             if (clicked === true) {
                 clicked = false
+
+                stuff = JSON.parse(decrypt(localStorage.getItem('data'), passcode))
+                // let index = stuff.findIndex(e => (e === msg.innerHTML || e.includes(msg.innerHTML)))
+                stuff = stuff.filter((e) => !(e === msg.innerHTML || e.includes(msg.innerHTML)) &&
+                    !(e === msg.innerHTML.replaceAll('<br>', '\n') || e.includes(msg.innerHTML.replaceAll('<br>', '\n'))))
+
                 messages.removeChild(msg)
-                let index = stuff.findIndex(e => (e === msg.innerHTML))
-                stuff = stuff.filter((e, i) => i !== index)
-                localStorage.setItem('data', encrypt(JSON.stringify(stuff), passcode))
+                if (stuff.length > 0) localStorage.setItem('data', encrypt(JSON.stringify(stuff), passcode))
             } else {
                 clicked = true
                 msg.setAttribute('style', 'background-color: rgb(255, 142, 142) !important; border: 2px solid rgb(255, 142, 142) !important;')
@@ -320,8 +324,10 @@ const init = (() => {
         }
 
         input.onblur = (e) => {
-            let value2 = input.value + e.key
+            let value2 = input.value
+            passcode = (localStorage.getItem('passcode') ?? 'null')
             if (value2 !== '' && decrypt(passcode, value2) === value2 && tryJSON(value2)) {
+                passcode = decrypt(localStorage.getItem('passcode') ?? 'null', value2)
                 loadState('journal').then(e => {
                     // console.log(e)
                     e(message, decrypt, encrypt, passcode, input, clear, theme, messages, init, logo, version, applyTheme, value2, tryJSON)
@@ -333,7 +339,7 @@ const init = (() => {
             // clearInterval(interval)
 
             let value2 = input.value + e.key
-            if (value2 !== '' && tryJSON(value2)) {
+            if (value2 !== '' && decrypt(passcode, value2) === value2 && tryJSON(value2)) {
                 loadState('journal').then(e => {
                     // console.log(e)
                     e(message, decrypt, encrypt, passcode, input, clear, theme, messages, init, logo, version, applyTheme, value2, tryJSON)
@@ -353,6 +359,27 @@ const init = (() => {
                     }
 
                     return
+                }
+
+                if (input.value.startsWith('.reset')) {
+                    if (input.value === '.reset') {
+                        message('Please supply a password.', false)
+                    }
+
+                    let input__passcode = input.value.substring('.reset '.length)
+                    if (input__passcode) {
+                        if (decrypt(passcode, input__passcode) === input__passcode) {
+                            input.value = ''
+                            input.setAttribute('disabled', '')
+                            message('Your data has been completely wiped.')
+                            localStorage.clear()
+                            location.reload()
+                        } else {
+                            message('Invalid passcode.', false)
+                        }
+                    } else {
+                        message('Please supply a password.', false)
+                    }
                 }
 
                 if (input.value === '.refresh') {

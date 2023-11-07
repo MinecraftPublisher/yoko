@@ -4,7 +4,7 @@ if (!tryJSON(value2)) {
     return
 }
 
-passcode = decrypt(passcode, value2)
+// passcode = decrypt(passcode, value2)
 
 const box = document.querySelector('box')
 
