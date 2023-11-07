@@ -231,12 +231,14 @@ const clear = ((text) => {
     messages.innerHTML = ``
 })
 
-globalThis.clearData = () => {
-    navigator.serviceWorker.getRegistrations().then(function (registrations) {
-        for (let registration of registrations) {
-            registration.unregister()
-        }
-    })
+globalThis.clearData = async () => {
+    const registrations = await navigator.serviceWorker.getRegistrations()
+
+    for (let registration of registrations) {
+        registration.unregister()
+    }
+
+    await caches.delete('yoko')
 
     location.reload()
 }
