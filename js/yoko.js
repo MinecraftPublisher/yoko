@@ -183,7 +183,7 @@ const message = ((text, deletable = true) => {
     const msg = document.createElement('msg')
 
     msg.innerHTML = text.replace(/^\n/g, '').replaceAll('\n', '<br>')
-        .replace(new RegExp('/```[^`]+```/g'), (g) => {
+        .replace(new RegExp('```[^`]+```', 'g'), (g) => {
             let txt = g.substring(3, g.length - 3)
             let id = (Math.floor(Math.random() * 899999999) + 100000000).toString()
             return `<code><textarea readonly id="doc-${id}" onclick="return globalThis.messageCodeClick('${id}')">${txt}</textarea></code>`
