@@ -22,6 +22,7 @@ const loadState = (async (state) => {
         'value2',
         'tryJSON'
     ]
+
     return new Function(...args, data)
 })
 
@@ -162,7 +163,7 @@ const isPWA = (navigator.standalone ?? false) || window.matchMedia('(display-mod
 let stuff = []
 let passcode = ''
 
-const encrypt = ((text, code) => CryptoJS.AES.encrypt(text, code))
+const encrypt = ((text, code) => CryptoJS.AES.encrypt(text, code).toString(CryptoJS.enc.Utf8))
 const decrypt = ((text, code) => CryptoJS.AES.decrypt(text, code).toString(CryptoJS.enc.Utf8))
 
 const params = new Proxy(new URLSearchParams(window.location.search), {
@@ -195,6 +196,8 @@ const message = ((text, deletable = true) => {
         msg.onclick = (e) => {
             if (clicked === true) {
                 clicked = false
+
+                console.log(localStorage.getItem('data'), passcode)
 
                 stuff = JSON.parse(decrypt(localStorage.getItem('data'), passcode))
                 // let index = stuff.findIndex(e => (e === msg.innerHTML || e.includes(msg.innerHTML)))
@@ -326,6 +329,7 @@ const init = (() => {
         input.onblur = (e) => {
             let value2 = input.value
             passcode = (localStorage.getItem('passcode') ?? 'null')
+
             if (value2 !== '' && decrypt(passcode, value2) === value2 && tryJSON(value2)) {
                 passcode = decrypt(localStorage.getItem('passcode') ?? 'null', value2)
                 loadState('journal').then(e => {
@@ -339,7 +343,8 @@ const init = (() => {
             // clearInterval(interval)
 
             let value2 = input.value + e.key
-            if (value2 !== '' && decrypt(passcode, value2) === value2 && tryJSON(value2)) {
+
+            if (value2 !== '' && tryJSON(value2)) {
                 loadState('journal').then(e => {
                     // console.log(e)
                     e(message, decrypt, encrypt, passcode, input, clear, theme, messages, init, logo, version, applyTheme, value2, tryJSON)

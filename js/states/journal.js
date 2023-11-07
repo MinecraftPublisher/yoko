@@ -41,7 +41,11 @@ input.onkeypress = (e) => {
     keypress.default(e)
 }
 
-stuff = JSON.parse(decrypt((localStorage.getItem('data') ?? encrypt('[]', passcode)), passcode))
+try {
+    stuff = JSON.parse(decrypt((localStorage.getItem('data') ?? encrypt('[]', value2)), value2))
+} catch (e) {
+    return
+}
 
 input.setAttribute('placeholder', 'Type a message...')
 
