@@ -1,4 +1,4 @@
-const version = '1.2 - Build 2'
+const version = '1.2 - Build 2.1'
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
@@ -25,8 +25,8 @@ const loadState = (async (state) => {
     return new Function(...args, data)
 })
 
-// false for now until cutomization option is added
-const wipeLocked = false
+// for now until cutomization option is added
+const wipeLocked = true
 
 const theme = {
     background: localStorage.getItem('theme--background') ?? '161616',
@@ -364,6 +364,7 @@ const init = (() => {
                 if (input.value.startsWith('.reset')) {
                     if (input.value === '.reset') {
                         message('Please supply a password.', false)
+                        return
                     }
 
                     let input__passcode = input.value.substring('.reset '.length)
@@ -374,11 +375,14 @@ const init = (() => {
                             message('Your data has been completely wiped.')
                             localStorage.clear()
                             location.reload()
+                            return
                         } else {
                             message('Invalid passcode.', false)
+                            return
                         }
                     } else {
                         message('Please supply a password.', false)
+                        return
                     }
                 }
 
