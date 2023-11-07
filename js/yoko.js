@@ -203,7 +203,7 @@ const message = ((text, deletable = true) => {
                     !(e === msg.innerHTML.replaceAll('<br>', '\n') || e.includes(msg.innerHTML.replaceAll('<br>', '\n'))))
 
                 messages.removeChild(msg)
-                if (stuff.length > 0) localStorage.setItem('data', encrypt(JSON.stringify(stuff), passcode))
+                localStorage.setItem('data', encrypt(JSON.stringify(stuff), passcode))
             } else {
                 clicked = true
                 msg.setAttribute('style', 'background-color: rgb(255, 142, 142) !important; border: 2px solid rgb(255, 142, 142) !important;')
