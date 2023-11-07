@@ -1,4 +1,4 @@
-const version = '1.2 - Build 2.1'
+const version = '1.2 - Build 3'
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
